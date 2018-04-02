@@ -22,5 +22,9 @@
   "bugs": {
     "url": "https://github.com/singcl/express/issues"
   },
-  "homepage": "https://github.com/singcl/express#readme"
+  "homepage": "https://github.com/singcl/express#readme",
+  "dependencies": {},
+  "devDependencies": {
+    "eslint": "^4.19.1"
+  }
 }
