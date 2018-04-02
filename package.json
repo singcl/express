@@ -1,0 +1,26 @@
+{
+  "name": "@singcl/express",
+  "version": "0.0.1",
+  "description": "A counterfeit Express",
+  "main": "index.js",
+  "directories": {
+    "example": "example"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/singcl/express.git"
+  },
+  "keywords": [
+    "Express",
+    "nodejs"
+  ],
+  "author": "singcl",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/singcl/express/issues"
+  },
+  "homepage": "https://github.com/singcl/express#readme"
+}
