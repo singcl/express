@@ -23,15 +23,29 @@ function Application() {
     //
 }
 
+
+/**
+ * @desc express GET方法
+ * @param {String} path 客户端请求URL路径
+ * @param {Application~requestCallback} handler 请求成功/失败的回调函数
+ */
+Application.prototype.get = function(path, handler) {
+    router.push({
+        path,
+        method: 'get',
+        handler
+    })
+}
+
 /**
  * @desc 原型方法 listen 对node http 相关方法的封装，启动一个http 服务
  * @name Application#listen
  * @function
- * @param {Number}  port Express 服务器启动的端口
- * @param {Application~serverSuccessCallback} cb - http server 成功启动后的回调函数
- * @see https://nodejs.org/dist/latest-v8.x/docs/api/http.html#http_server_listen
+ * @param {Number=}  port Express 服务器启动的端口
+ * @param {Application~serverSuccessCallback=} cb - http server 成功启动后的回调函数
+ * @see 这里只列出常用参数。具体参数列表请查看{@link https://nodejs.org/dist/latest-v8.x/docs/api/http.html#http_server_listen}
  */
-Application.prototype.listen = function(port, cb) {
+Application.prototype.listen = function(...args) {
     const self = this
     const server = http.createServer(function(req, res) {
         let { pathname } = url.parse(req.url, true)
@@ -43,7 +57,7 @@ Application.prototype.listen = function(port, cb) {
         }
         router[0].handler(req, res)
     })
-    server.listen(port, cb)
+    server.listen(...args)
 }
 
 /**
@@ -52,6 +66,16 @@ Application.prototype.listen = function(port, cb) {
  *  **无参数**.
  * 
  * @callback Application~serverSuccessCallback
+ */
+
+/**
+ * This callback is displayed as part of the Application class.
+ * http server 客户端请求回调函数.
+ * 
+ * @callback Application~requestCallback
+ * @param {Object}   req  request对象 Stream流
+ * @param {Object}   res  response对象 Stream流
+ *
  */
 
 /**
