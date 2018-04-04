@@ -23,7 +23,9 @@
     "url": "https://github.com/singcl/express/issues"
   },
   "homepage": "https://github.com/singcl/express#readme",
-  "dependencies": {},
+  "dependencies": {
+    "path-to-regexp": "^2.2.0"
+  },
   "devDependencies": {
     "eslint": "^4.19.1"
   }
