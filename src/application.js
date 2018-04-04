@@ -1,3 +1,4 @@
+
 const http = require('http')
 const url = require('url')
 
@@ -10,12 +11,20 @@ const router = [{
     }
 }]
 
-// Application 构造函数
+/**
+ * @description Express Application 构造函数
+ * @constructor
+ * @public
+ */
 function Application() {
     //
 }
 
-// 类的原型方法listen
+/**
+ * @desc 原型方法 listen 对node http 相关方法的封装，启动一个http 服务
+ * @name Application#listen
+ * @function
+ */
 Application.prototype.listen = function(...args) {
     const self = this
     const server = http.createServer(function(req, res) {
@@ -31,5 +40,8 @@ Application.prototype.listen = function(...args) {
     server.listen(...args)
 }
 
-//
+/**
+ * Express http Server Constructor module
+ * @module
+ */
 module.exports = Application
