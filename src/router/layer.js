@@ -44,7 +44,7 @@ Layer.prototype.match = function(path) {
         if (matches) {
             this.params = {}
             for (var i = 1; i < matches.length; i++) {
-                var name = this.keys[i -1].name
+                var name = this.keys[i - 1].name
                 var value = matches[i]
                 this.params[name] = value
             }
