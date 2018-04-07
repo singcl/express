@@ -54,13 +54,34 @@ Layer.prototype.match = function(path) {
     return false
 }
 
+/**
+ * @description request处理函数
+ * @name Layer#handleRequest
+ * @function
+ * @param {Object}  req     请求流
+ * @param {Object}  res     相应流
+ * @param {Object}  next    控制权转移
+ */
 Layer.prototype.handleRequest = function(req, res, next) {
     this.handler(req, res, next)
 }
 
+/**
+ * @description request错误处理函数
+ * @name Layer#handleError
+ * @function
+ * @param {Object}  err     错误处理
+ * @param {Object}  req     请求流
+ * @param {Object}  res     相应流
+ * @param {Object}  next    控制权转移
+ */
 Layer.prototype.handleError = function(err, req, res, next) {
     if (this.handler.length !== 4) return next(err)
     this.handler(err, req, res, next)
 }
 
+/**
+ * Express Layer Constructor module
+ * @module
+ */
 module.exports = Layer

@@ -26,6 +26,7 @@ function Application() {
 
 /**
  * @desc express GET方法
+ * @function Application#get
  * @param {String} path 客户端请求URL路径
  * @param {Application~requestCallback} handler 请求成功/失败的回调函数
  */
