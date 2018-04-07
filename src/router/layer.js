@@ -53,3 +53,14 @@ Layer.prototype.match = function(path) {
     }
     return false
 }
+
+Layer.prototype.handleRequest = function(req, res, next) {
+    this.handler(req, res, next)
+}
+
+Layer.prototype.handleError = function(err, req, res, next) {
+    if (this.handler.length !== 4) return next(err)
+    this.handler(err, req, res, next)
+}
+
+module.exports = Layer
