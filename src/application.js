@@ -47,7 +47,6 @@ Application.prototype.get = function(path, handler) {
  * @see 这里只列出常用参数。具体参数列表请查看{@link https://nodejs.org/dist/latest-v8.x/docs/api/http.html#http_server_listen}
  */
 Application.prototype.listen = function(...args) {
-    // const self = this
     const server = http.createServer(function(req, res) {
         let { pathname } = url.parse(req.url, true)
         for (let i = 1; i < router.length; i++) {
