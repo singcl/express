@@ -59,7 +59,7 @@ Layer.prototype.match = function(path) {
  * @name Layer#handleRequest
  * @function
  * @param {Object}  req     请求流
- * @param {Object}  res     相应流
+ * @param {Object}  res     响应流
  * @param {Object}  next    控制权转移
  */
 Layer.prototype.handleRequest = function(req, res, next) {
@@ -72,7 +72,7 @@ Layer.prototype.handleRequest = function(req, res, next) {
  * @function
  * @param {Object}  err     错误处理
  * @param {Object}  req     请求流
- * @param {Object}  res     相应流
+ * @param {Object}  res     响应流
  * @param {Object}  next    控制权转移
  */
 Layer.prototype.handleError = function(err, req, res, next) {
