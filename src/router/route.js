@@ -35,7 +35,7 @@ methods.forEach(function(method) {
         var handlers = Array.prototype.slice.call(arguments)
         this.methods[method] = true
         for(var i = 0; i < handlers.length; i++) {
-            let layer = new Layer('/', handlers[i])
+            var layer = new Layer('/', handlers[i])
             layer.method = method
             this.stack.push(layer)
         }
