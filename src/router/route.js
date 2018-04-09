@@ -12,7 +12,7 @@ function Route(path) {
     this.path = path
     this.stack = []
     // 表示当前路由拥有相应方法的处理函数
-    // {GET: true, POST: true, PUT: true}
+    // {get: true, post: true, put: true}
     this.methods = {}
 }
 

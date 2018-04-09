@@ -20,17 +20,17 @@ Application.prototype.lazyRouter = function() {
     if (this._router) this._router = new Router()
 }
 
-/**
- * @desc express param
- * @function Application#param
- * @param {String} name param name
- * @param {Application~paramCallback} handler param处理函数,param校验函数
- * @todo paramCallback 定义
- */
-Application.prototype.param = function(name, handler) {
-    this.lazyRouter()
-    this._router.param.apply(this._router, [name, handler])
-}
+// /**
+//  * @desc express param
+//  * @function Application#param
+//  * @param {String} name param name
+//  * @param {Application~paramCallback} handler param处理函数,param校验函数
+//  * @todo paramCallback 定义
+//  */
+// Application.prototype.param = function(name, handler) {
+//     this.lazyRouter()
+//     this._router.param.apply(this._router, [name, handler])
+// }
 
 /**
  * @desc express 实例上增加路由方法
