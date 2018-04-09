@@ -13,8 +13,8 @@ function Router() {
     }
     Object.setPrototypeOf(router, proto)
     router.stack = []
-    // // 声明一个对象，用来缓存路径参数名它对应的回调函数数组
-    // router.paramCallbacks = {}
+    // 声明一个对象，用来缓存路径参数名它对应的回调函数数组
+    router.paramCallbacks = {}
     return router
 }
 

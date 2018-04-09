@@ -32,25 +32,29 @@ function Layer(path, handler) {
  */
 Layer.prototype.match = function(path) {
     if (this.path === path) return true
+
+    // 如果这个Layer是一个全局中间件的 Layer
     if (!this.route) {
+        // app.use(function(req, res, next) {...})
         if (this.path === '/') return true
+        // app.use('/blogs', function(req, res, next) {...})
         return path.startsWith(this.path + '/') 
     }
 
-    //如果这个Layer是一个路由的 Layer
-    if (this.route) {
-        //
-        var matches = this.regexp.exec(path)
-        if (matches) {
-            this.params = {}
-            for (var i = 1; i < matches.length; i++) {
-                var name = this.keys[i - 1].name
-                var value = matches[i]
-                this.params[name] = value
-            }
-            return true
-        }
-    }
+    // // 如果这个Layer是一个类似/user/:uuid 的路由的 Layer
+    // if (this.route) {
+    //     //
+    //     var matches = this.regexp.exec(path)
+    //     if (matches) {
+    //         this.params = {}
+    //         for (var i = 1; i < matches.length; i++) {
+    //             var name = this.keys[i - 1].name
+    //             var value = matches[i]
+    //             this.params[name] = value
+    //         }
+    //         return true
+    //     }
+    // }
     return false
 }
 
