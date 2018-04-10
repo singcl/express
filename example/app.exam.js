@@ -1,7 +1,7 @@
 // var express = require('../src/express')
 // var app = express()
 var error = require('../src/middleware/error')
-var Express = require('../src/application-hoc')
+var Express = require('../src/application')
 var app = new Express()
 
 app.get('/example', function(req, res, next) {

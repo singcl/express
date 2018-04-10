@@ -1,18 +1,6 @@
-
-const http = require('http')
-const url = require('url')
-
-/**
- * @description 自定义路由
- * @namespace  router
- */
-const router = [{
-    path: '*',
-    method: '*',
-    handler: function(req, res) {
-        res.end(`Can not ${req.method}-${req.url}`)
-    }
-}]
+var http = require('http')
+var Router = require('./router')
+var methods = require('methods')
 
 /**
  * @description Express Application 构造函数
@@ -23,19 +11,32 @@ function Application() {
     //
 }
 
+/**
+ * @desc express 实例上如果没有router实例，增加router实例
+ * @function Application#lazyRouter
+ */
+Application.prototype.lazyRouter = function() {
+    if (!this._router) this._router = new Router()
+}
 
 /**
- * @desc express GET方法
- * @function Application#get
- * @param {String} path 客户端请求URL路径
- * @param {Application~requestCallback} handler 请求成功/失败的回调函数
+ * @desc express 实例上增加路由方法
+ * 实际是调用router实例上的方法
  */
-Application.prototype.get = function(path, handler) {
-    router.push({
-        path,
-        method: 'get',
-        handler
-    })
+methods.forEach(function(method) {
+    Application.prototype[method] = function() {
+        this.lazyRouter()
+        this._router[method].apply(this._router, arguments)
+        return this
+    }
+})
+
+/**
+ * @desc 添加中间件，而中间件和普通的路由都是放在一个栈中的，放在this._router.stack
+ */
+Application.prototype.use = function() {
+    this.lazyRouter()
+    this._router.use.apply(this._router, arguments)
 }
 
 /**
@@ -46,18 +47,21 @@ Application.prototype.get = function(path, handler) {
  * @param {Application~serverSuccessCallback=} cb - http server 成功启动后的回调函数
  * @see 这里只列出常用参数。具体参数列表请查看{@link https://nodejs.org/dist/latest-v8.x/docs/api/http.html#http_server_listen}
  */
-Application.prototype.listen = function(...args) {
-    const server = http.createServer(function(req, res) {
-        let { pathname } = url.parse(req.url, true)
-        for (let i = 1; i < router.length; i++) {
-            let { path, method, handler } = router[i]
-            if (pathname === path && req.method.toLocaleLowerCase === method) {
-                return handler(req, res)
-            }
+Application.prototype.listen = function() {
+    // 确保原型方法都没有调用的时候this._router存在
+    this.lazyRouter()
+
+    var self = this
+    var server = http.createServer(function(req, res) {
+        // 异常/错误 处理函数done
+        function done(err) {
+            err ? res.end('errorMsg:' + err) : res.end('Cannot' + req.method + req.url)
         }
-        router[0].handler(req, res)
+        self._router.handle(req, res, done)
     })
-    server.listen(...args)
+
+    // 调用http server 的listen 方法
+    server.listen.apply(server, arguments)
 }
 
 /**
@@ -66,16 +70,6 @@ Application.prototype.listen = function(...args) {
  *  **无参数**.
  * 
  * @callback Application~serverSuccessCallback
- */
-
-/**
- * This callback is displayed as part of the Application class.
- * http server 客户端请求回调函数.
- * 
- * @callback Application~requestCallback
- * @param {Object}   req  request对象 Stream流
- * @param {Object}   res  response对象 Stream流
- *
  */
 
 /**
