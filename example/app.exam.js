@@ -3,8 +3,8 @@
 const Express = require('../src/application-hoc')
 const app = new Express()
 
-app.use('/example', function(req, res, next) {
-    res.write('sjflsjfsdlfjsdlfjs')
+app.use('/example', function(req, res) {
+    res.write('来自星星的你')
     res.end(function() {
         console.log('数据已发送！')
     })
