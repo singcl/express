@@ -5,6 +5,7 @@ A counterfeit Express.
 ### Usage
 `npm i @singcl/express`
 
+### example
 ```js
 var express = require('@singcl/express')
 var app = express()
@@ -25,10 +26,17 @@ app.get('/user', function(req, res, next) {
 })
 
 // 错误中间件use - 自定义如何处理错误
-app.use(error(function(err, req, res, next) {
-    console.log(err)
-    res.end(err)
-}))
+app.use(function(err, req, res, next) {
+    // err存在时调用该中间件 - 处理错误逻辑: 这个时候4个参数
+    if (next) {
+        console.log(err)
+        res.end(err)
+    } else {
+        // err不存在时调用该中间件 - 比如客户端发起一个不存在的路径请求
+        // 直接跳过该中间件
+        res()
+    }
+})
 
 //
 app.listen(3000, function() {
