@@ -1,9 +1,6 @@
-const Application = require('./application')
+const Application = require('./application-hoc')
 
-/* // ES5
-function createApplication() {
+// exports function that return instance of Application
+module.exports = function() {
     return new Application()
 }
-module.exports = createApplication */
-
-module.exports = () => new Application()

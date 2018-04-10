@@ -9,7 +9,7 @@ var methods = require('methods')
  * @public
  */
 function Application() {
-    this.settings = {}
+    // this.settings = {}
 }
 
 /**
@@ -17,7 +17,7 @@ function Application() {
  * @function Application#lazyRouter
  */
 Application.prototype.lazyRouter = function() {
-    if (this._router) this._router = new Router()
+    if (!this._router) this._router = new Router()
 }
 
 // /**
@@ -61,6 +61,9 @@ Application.prototype.use = function() {
  * @see 这里只列出常用参数。具体参数列表请查看{@link https://nodejs.org/dist/latest-v8.x/docs/api/http.html#http_server_listen}
  */
 Application.prototype.listen = function(...args) {
+    // 确保原型方法都没有调用的时候this._router存在
+    this.lazyRouter()
+
     var self = this
     var server = http.createServer(function(req, res) {
         // 异常/错误 处理函数done
@@ -78,16 +81,6 @@ Application.prototype.listen = function(...args) {
  *  **无参数**.
  * 
  * @callback Application~serverSuccessCallback
- */
-
-/**
- * This callback is displayed as part of the Application class.
- * http server 客户端请求回调函数.
- * 
- * @callback Application~requestCallback
- * @param {Object}   req  request对象 Stream流
- * @param {Object}   res  response对象 Stream流
- *
  */
 
 /**

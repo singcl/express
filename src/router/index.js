@@ -13,8 +13,8 @@ function Router() {
     }
     Object.setPrototypeOf(router, proto)
     router.stack = []
-    // 声明一个对象，用来缓存路径参数名它对应的回调函数数组
-    router.paramCallbacks = {}
+    // // 声明一个对象，用来缓存路径参数名它对应的回调函数数组
+    // router.paramCallbacks = {}
     return router
 }
 
@@ -50,12 +50,12 @@ methods.forEach(function(method) {
     }
 })
 
-proto.param = function(name, handler) {
-    if (!this.paramCallbacks[name]) {
-        this.paramCallbacks[name] = []
-    }
-    this.paramCallbacks[name].push(handler)
-}
+// proto.param = function(name, handler) {
+//     if (!this.paramCallbacks[name]) {
+//         this.paramCallbacks[name] = []
+//     }
+//     this.paramCallbacks[name].push(handler)
+// }
 
 proto.handle = function(req, res, out) {
     var idx = 0
@@ -94,10 +94,10 @@ proto.handle = function(req, res, out) {
                 }
             } else {
                 if (layer.route && layer.route.handleMethod(req.method)) {
-                    req.params = layer.params
-                    self.processParams(layer, req, res, function() {
-                        layer.handleRequest(req, res, next)
-                    })
+                    // req.params = layer.params
+                    // self.processParams(layer, req, res, function() {
+                    layer.handleRequest(req, res, next)
+                    // })
                 } else {
                     next(err)
                 }
@@ -109,36 +109,50 @@ proto.handle = function(req, res, out) {
     next()
 }
 
-proto.processParams = function(layer, req, res, out) {
-    var keys = layer.keys
-    var self = this
+// proto.processParams = function(layer, req, res, out) {
+//     var keys = layer.keys
+//     var self = this
 
-    var paramIndex = 0
-    var key, name, val, callbacks, callback
+//     var paramIndex = 0
+//     var key, name, val, callbacks, callback
 
-    function param() {
-        if (paramIndex >= keys.length) {
-            return out()
-        }
-        key = keys[paramIndex++]
-        name = key.name
-        val = layer.params[name]
-        callbacks = self.paramCallbacks[name]
-        if (!val || !callbacks) {
-            return param()
-        }
-        execCallback()
-    }
+//     function param() {
+//         if (paramIndex >= keys.length) {
+//             return out()
+//         }
+//         key = keys[paramIndex++]
+//         name = key.name
+//         val = layer.params[name]
+//         callbacks = self.paramCallbacks[name]
+//         if (!val || !callbacks) {
+//             return param()
+//         }
+//         execCallback()
+//     }
 
-    var callbackIndex = 0
-    function execCallback() {
-        callback = callbacks[callbackIndex++]
-        if (!callback) {
-            return param()
-        }
-        callback(req, res, execCallback, val, name)
-    }
-    param()
-}
+//     var callbackIndex = 0
+//     function execCallback() {
+//         callback = callbacks[callbackIndex++]
+//         if (!callback) {
+//             return param()
+//         }
+//         callback(req, res, execCallback, val, name)
+//     }
+//     param()
+// }
 
+/**
+ * This callback is displayed as part of the Application class.
+ * http server 客户端请求回调函数.
+ * 
+ * @callback Router~requestCallback
+ * @param {Object}   req  request对象 Stream流
+ * @param {Object}   res  response对象 Stream流
+ *
+ */
+
+/**
+ * Express Router Constructor module
+ * @module
+ */
 module.exports = Router
