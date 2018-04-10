@@ -55,7 +55,19 @@ Application.prototype.listen = function() {
     var server = http.createServer(function(req, res) {
         // 异常/错误 处理函数done
         function done(err) {
-            err ? res.end('errorMsg:' + err) : res.end('Cannot' + req.method + req.url)
+            if (err) {
+                res.writeHead(500, {'Content-Type': 'text/plain;charset=utf-8'})
+                res.write('errorMsg:' + err, 'utf8')
+                res.end(function() {
+                    console.log('默认错误处理函数[done(err)] - 错误以处理！')
+                })
+            } else {
+                res.writeHead(404, {'Content-Type': 'text/plain;charset=utf-8'})
+                res.write('Cannot 【' + req.method + '】【' + req.url + '】')
+                res.end(function() {
+                    console.log('默认错误处理函数[done()] - 错误以处理！')
+                })
+            }
         }
         self._router.handle(req, res, done)
     })
