@@ -46,16 +46,9 @@ methods.forEach(function(method) {
     proto[method] = function(path) {
         var route = this.route(path)
         route[method].apply(route, Array.prototype.slice.call(arguments, 1))
-        return this
+        return this 
     }
 })
-
-// proto.param = function(name, handler) {
-//     if (!this.paramCallbacks[name]) {
-//         this.paramCallbacks[name] = []
-//     }
-//     this.paramCallbacks[name].push(handler)
-// }
 
 proto.handle = function(req, res, out) {
     var idx = 0
@@ -94,10 +87,7 @@ proto.handle = function(req, res, out) {
                 }
             } else {
                 if (layer.route && layer.route.handleMethod(req.method)) {
-                    // req.params = layer.params
-                    // self.processParams(layer, req, res, function() {
                     layer.handleRequest(req, res, next)
-                    // })
                 } else {
                     next(err)
                 }
@@ -108,38 +98,6 @@ proto.handle = function(req, res, out) {
     }
     next()
 }
-
-// proto.processParams = function(layer, req, res, out) {
-//     var keys = layer.keys
-//     var self = this
-
-//     var paramIndex = 0
-//     var key, name, val, callbacks, callback
-
-//     function param() {
-//         if (paramIndex >= keys.length) {
-//             return out()
-//         }
-//         key = keys[paramIndex++]
-//         name = key.name
-//         val = layer.params[name]
-//         callbacks = self.paramCallbacks[name]
-//         if (!val || !callbacks) {
-//             return param()
-//         }
-//         execCallback()
-//     }
-
-//     var callbackIndex = 0
-//     function execCallback() {
-//         callback = callbacks[callbackIndex++]
-//         if (!callback) {
-//             return param()
-//         }
-//         callback(req, res, execCallback, val, name)
-//     }
-//     param()
-// }
 
 /**
  * This callback is displayed as part of the Application class.

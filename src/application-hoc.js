@@ -54,8 +54,8 @@ Application.prototype.listen = function() {
     var self = this
     var server = http.createServer(function(req, res) {
         // 异常/错误 处理函数done
-        function done() {
-            res.end('Cannot' + req.method + req.url)
+        function done(err) {
+            err ? res.end('errorMsg:' + err) : res.end('Cannot' + req.method + req.url)
         }
         self._router.handle(req, res, done)
     })
