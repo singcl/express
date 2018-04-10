@@ -1,5 +1,4 @@
 var http = require('http')
-// var url = require('url')
 var Router = require('./router')
 var methods = require('methods')
 
@@ -9,28 +8,16 @@ var methods = require('methods')
  * @public
  */
 function Application() {
-    // this.settings = {}
+    //
 }
 
 /**
- * @desc express 实例上增加router实例
+ * @desc express 实例上如果没有router实例，增加router实例
  * @function Application#lazyRouter
  */
 Application.prototype.lazyRouter = function() {
     if (!this._router) this._router = new Router()
 }
-
-// /**
-//  * @desc express param
-//  * @function Application#param
-//  * @param {String} name param name
-//  * @param {Application~paramCallback} handler param处理函数,param校验函数
-//  * @todo paramCallback 定义
-//  */
-// Application.prototype.param = function(name, handler) {
-//     this.lazyRouter()
-//     this._router.param.apply(this._router, [name, handler])
-// }
 
 /**
  * @desc express 实例上增加路由方法
@@ -39,13 +26,13 @@ Application.prototype.lazyRouter = function() {
 methods.forEach(function(method) {
     Application.prototype[method] = function() {
         this.lazyRouter()
-        this._router[method].apply(this._router, Array.prototype.slice.call(arguments))
+        this._router[method].apply(this._router, arguments)
         return this
     }
 })
 
 /**
- * @desc 添加中间件，而中间件和普通的路由都是放在一个数组中的，放在this._router.stack
+ * @desc 添加中间件，而中间件和普通的路由都是放在一个栈中的，放在this._router.stack
  */
 Application.prototype.use = function() {
     this.lazyRouter()
@@ -60,7 +47,7 @@ Application.prototype.use = function() {
  * @param {Application~serverSuccessCallback=} cb - http server 成功启动后的回调函数
  * @see 这里只列出常用参数。具体参数列表请查看{@link https://nodejs.org/dist/latest-v8.x/docs/api/http.html#http_server_listen}
  */
-Application.prototype.listen = function(...args) {
+Application.prototype.listen = function() {
     // 确保原型方法都没有调用的时候this._router存在
     this.lazyRouter()
 
@@ -72,7 +59,9 @@ Application.prototype.listen = function(...args) {
         }
         self._router.handle(req, res, done)
     })
-    server.listen(...args)
+
+    // 调用http server 的listen 方法
+    server.listen.apply(server, arguments)
 }
 
 /**
