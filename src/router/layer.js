@@ -41,20 +41,20 @@ Layer.prototype.match = function(path) {
         return path.startsWith(this.path + '/') 
     }
 
-    // // 如果这个Layer是一个类似/user/:uuid 的路由的 Layer
-    // if (this.route) {
-    //     //
-    //     var matches = this.regexp.exec(path)
-    //     if (matches) {
-    //         this.params = {}
-    //         for (var i = 1; i < matches.length; i++) {
-    //             var name = this.keys[i - 1].name
-    //             var value = matches[i]
-    //             this.params[name] = value
-    //         }
-    //         return true
-    //     }
-    // }
+    // 如果这个Layer是一个类似/user/:uuid 的路由的 Layer
+    if (this.route) {
+        //
+        var matches = this.regexp.exec(path)
+        if (matches) {
+            // this.params = {}
+            // for (var i = 1; i < matches.length; i++) {
+            //     var name = this.keys[i - 1].name
+            //     var value = matches[i]
+            //     this.params[name] = value
+            // }
+            return true
+        }
+    }
     return false
 }
 

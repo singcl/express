@@ -1,7 +1,8 @@
-// const express = require('../src/express')
-// const app = express()
-const Express = require('../src/application-hoc')
-const app = new Express()
+// var express = require('../src/express')
+// var app = express()
+var error = require('../src/middleware/error')
+var Express = require('../src/application-hoc')
+var app = new Express()
 
 app.get('/example', function(req, res, next) {
     // 告诉客户端以UTF-8的方式解析
@@ -13,6 +14,12 @@ app.get('/example', function(req, res, next) {
     //     console.log('数据已发送！')
     // })
 })
+
+// 错误中间件use - 自定义如何处理错误
+app.use(error(function(err, req, res, next) {
+    console.log(err)
+    res.end(err)
+}))
 
 // 
 app.listen(3000, function() {
