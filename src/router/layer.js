@@ -10,7 +10,7 @@ function Layer(path, handler) {
     this.path = path
     this.handler = handler
     this.keys = []
-    // this.path =/user/:uuid   this.keys = [{name:'uuid'}]
+    // this.path =/user/:uuid   this.keys = [{name:'uuid', ...}]
     this.regexp = pathToRegexp(this.path, this.keys)
 }
 
@@ -45,15 +45,7 @@ Layer.prototype.match = function(path) {
     if (this.route) {
         //
         var matches = this.regexp.exec(path)
-        if (matches) {
-            // this.params = {}
-            // for (var i = 1; i < matches.length; i++) {
-            //     var name = this.keys[i - 1].name
-            //     var value = matches[i]
-            //     this.params[name] = value
-            // }
-            return true
-        }
+        if (matches) { return true }
     }
     return false
 }

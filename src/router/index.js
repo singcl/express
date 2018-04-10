@@ -57,7 +57,6 @@ proto.handle = function(req, res, out) {
     var removed = ''
 
     var pathname = url.parse(req.url, true).pathname
-    // eslint-disable-next-line
     function next(err) {
         if (slashAdded) {
             req.url = ''
