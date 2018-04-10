@@ -3,7 +3,7 @@
 A counterfeit Express.
 
 ### Usage
-`npm i @singcl/express`
+`npm i @singcl/express -S`
 
 ### example
 ```js
