@@ -1,5 +1,4 @@
 ![Express@singcl](./src/img/express.jpg)
-[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fsingcl%2Fexpress.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fsingcl%2Fexpress?ref=badge_shield)
 ## 🐠 Express
 [![npm (scoped)](https://img.shields.io/npm/v/@singcl/express.svg?style=flat-square)](https://www.npmjs.com/package/@singcl/promise)
 [![code style: prettier](https://img.shields.io/badge/code_style-prettier-10de6e.svg?style=flat-square)](https://github.com/prettier/prettier)
@@ -53,5 +52,5 @@ app.listen(3000, function() {
 })
 ```
 
-## License
+## License[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fsingcl%2Fexpress.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fsingcl%2Fexpress?ref=badge_shield)
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fsingcl%2Fexpress.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fsingcl%2Fexpress?ref=badge_large)
