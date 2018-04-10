@@ -29,10 +29,7 @@ app.post('/user', function(req, res, next) {
 })
 
 // 错误中间件use - 自定义如何处理错误
-app.use(error(function(err, req, res, next) {
-    console.log(err)
-    res.end(err)
-}))
+app.use(error())
 
 // 
 app.listen(3000, function() {
