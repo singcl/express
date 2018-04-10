@@ -12,12 +12,10 @@ module.exports = function(callback) {
         if (typeof callback === 'function') {
             callback(err, req, res, next)
         } else {
-            res.writeHead(500, {
-                'Content-Type': 'text/plain;charset=utf-8'
-            })
+            res.writeHead(500, {'Content-Type': 'text/plain;charset=utf-8'})
             res.write(err)
             res.end(function() {
-                console.log('错误【 ' + err + ' 】已经成功处理！' )
+                console.log('Middleware error [default] | 错误【 ' + err + ' 】已经成功处理！' )
             })
         }
     }
