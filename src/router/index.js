@@ -51,7 +51,7 @@ methods.forEach(function(method) {
 })
 
 proto.handle = function(req, res, out) {
-    var idx = 0
+    var index = 0
     var self = this
     var slashAdded = false
     var removed = ''
@@ -68,10 +68,10 @@ proto.handle = function(req, res, out) {
             req.url = removed + req.url
             removed = ''
         }
-        if (idx >= self.stack.length) {
+        if (index >= self.stack.length) {
             return out(err)
         }
-        var layer = self.stack[idx++]
+        var layer = self.stack[index++]
         if (layer.match(pathname)) {
             if (!layer.route) {
                 removed = layer.path
