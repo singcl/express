@@ -4,6 +4,7 @@
 [![code style: prettier](https://img.shields.io/badge/code_style-prettier-10de6e.svg?style=flat-square)](https://github.com/prettier/prettier)
 ![David](https://img.shields.io/david/dev/singcl/express.svg?style=flat-square)
 ![David](https://img.shields.io/david/singcl/express.svg?style=flat-square)
+[![npm](https://img.shields.io/npm/dm/@singcl/express.svg?style=flat-square)](https://www.npmjs.com/package/@singcl/express)
 
 ### A counterfeit Express.
 
