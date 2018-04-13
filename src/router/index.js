@@ -26,9 +26,9 @@ function Router() {
 var proto = Object.create(null)
 
 /**
- * @todo
- * @param {String} path 
- * @param {*} handler 
+ * @desc Express 加载全局中间件的方法
+ * @param {String} path         请求路径
+ * @param {Middleware} handler  全局中间件函数
  */
 var use = function(path, handler) {
     if (typeof handler !== 'function') {
@@ -59,7 +59,10 @@ var route = function(path) {
     return route
 }
 
-// TODO
+/**
+ * 遍历所有http请求方法，然后添加到router的原型对象上
+ * 这样router实例就具有所有http 请求方法
+ */
 methods.forEach(function(method) {
     proto[method] = function(path) {
         var route = this.route(path)
@@ -118,12 +121,13 @@ proto.handle = function(req, res, out) {
 }
 
 /**
- * This callback is displayed as part of the Application class.
- * http server 客户端请求回调函数.
+ * This callback is displayed as a global member.
+ * Express 中间件函数
  * 
- * @callback Router~requestCallback
- * @param {Object}   req  request对象 Stream流
- * @param {Object}   res  response对象 Stream流
+ * @callback Middleware
+ * @param {Object}      req    request对象 Stream流
+ * @param {Object}      res    response对象 Stream流
+ * @param {Function}    next   next函数-当前layer出栈，下一个layer入栈。即执行权交给下个中间件
  *
  */
 
