@@ -18,11 +18,22 @@ function Router() {
     return router
 }
 
-// 创建一个没有原型的对象，该对象将作为Router实例的原型对象使用
+/**
+ * 创建一个没有原型的对象，该对象将作为Router实例的原型对象使用
+ * JS继承基本分为两大类：类继承 和 原型继承
+ * @namespace {Object} proto
+ */ 
 var proto = Object.create(null)
 
-
-proto.route = function(path) {
+/**
+ * 接受客户端请求后，根据请求的path 生成第一级 Layer 层，Layer 中包含一个Route 实例
+ * @param {String} path 路由路径字符串
+ * @memberof proto
+ * @function
+ * @name route
+ * @returns {Object} 返回一个Route实例
+ */
+var route = function(path) {
     var route = new Route(path)
     var layer = new Layer(path, route.dispatch.bind(route))
     layer.route = route
@@ -30,6 +41,7 @@ proto.route = function(path) {
     return route
 }
 
+// TODO
 proto.use = function(path, handler) {
     if (typeof handler !== 'function') {
         handler = path
@@ -42,6 +54,7 @@ proto.use = function(path, handler) {
     return this
 }
 
+// TODO
 methods.forEach(function(method) {
     proto[method] = function(path) {
         var route = this.route(path)
@@ -50,6 +63,7 @@ methods.forEach(function(method) {
     }
 })
 
+// TODO
 proto.handle = function(req, res, out) {
     var index = 0
     var self = this
@@ -107,6 +121,9 @@ proto.handle = function(req, res, out) {
  * @param {Object}   res  response对象 Stream流
  *
  */
+
+// TODO
+proto.route = route
 
 /**
  * Express Router Constructor module
