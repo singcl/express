@@ -26,7 +26,25 @@ function Router() {
 var proto = Object.create(null)
 
 /**
- * 接受客户端请求后，根据请求的path 生成第一级 Layer 层，Layer 中包含一个Route 实例
+ * @todo
+ * @param {String} path 
+ * @param {*} handler 
+ */
+var use = function(path, handler) {
+    if (typeof handler !== 'function') {
+        handler = path
+        path = '/'
+    }
+
+    var layer = new Layer(path, handler)
+    layer.route = undefined
+    this.stack.push(layer)
+    return this
+}
+
+/**
+ * 接受客户端请求后，根据请求的path 生成第一级 Layer 层，Layer 中包含一个Route 实例  ？？？
+ * Route实例的 stack 队列中包含一系列 第二级Layer，第二级Layer是对 路由中间件 的封装 ？？？
  * @param {String} path 路由路径字符串
  * @memberof proto
  * @function
@@ -39,19 +57,6 @@ var route = function(path) {
     layer.route = route
     this.stack.push(layer)
     return route
-}
-
-// TODO
-proto.use = function(path, handler) {
-    if (typeof handler !== 'function') {
-        handler = path
-        path = '/'
-    }
-
-    var layer = new Layer(path, handler)
-    layer.route = undefined
-    this.stack.push(layer)
-    return this
 }
 
 // TODO
@@ -124,6 +129,7 @@ proto.handle = function(req, res, out) {
 
 // TODO
 proto.route = route
+proto.use   = use
 
 /**
  * Express Router Constructor module
