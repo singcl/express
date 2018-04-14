@@ -69,6 +69,9 @@ Application.prototype.listen = function() {
                 })
             }
         }
+        // 客户端请求流处理函数执行
+        // 来自客户端的所有HTTP请求都会经过此处理函数
+        // 该处理函数内部由一系列中间件组成
         self._router.handle(req, res, done)
     })
 
