@@ -4,28 +4,6 @@ var url = require('url')
 var methods = require('methods')
 
 /**
- * @desc Router 不是真的的构造函数，类似工厂函数 （可直接执行 也可以new 执行）
- * @constructor
- */
-function Router() {
-    function router(req, res, next) {
-        router.handle(req, res, next)
-    }
-    Object.setPrototypeOf(router, proto)
-    router.stack = []
-    // // 声明一个对象，用来缓存路径参数名它对应的回调函数数组
-    // router.paramCallbacks = {}
-    return router
-}
-
-/**
- * 创建一个没有原型的对象，该对象将作为Router实例的原型对象使用
- * JS继承基本分为两大类：类继承 和 原型继承
- * @namespace {Object} proto
- */ 
-var proto = Object.create(null)
-
-/**
  * @desc Express 加载全局中间件的方法
  * @param {String} path         请求路径
  * @param {Middleware} handler  全局中间件函数
@@ -60,19 +38,14 @@ var route = function(path) {
 }
 
 /**
- * 遍历所有http请求方法，然后添加到router的原型对象上
- * 这样router实例就具有所有http 请求方法
+ * 客户端请求流处理函数
+ * 来自客户端的所有HTTP请求都会经过此处理函数
+ * 该处理函数内部由一系列中间件组成
+ * @param {Object}                      req    request对象 Stream流
+ * @param {Object}                      res    response对象 Stream流
+ * @param {proto~InnerExceededCallback} out    @singcl/express 内部默认的第一级Layer stack溢出时处理函数
  */
-methods.forEach(function(method) {
-    proto[method] = function(path) {
-        var route = this.route(path)
-        route[method].apply(route, Array.prototype.slice.call(arguments, 1))
-        return this 
-    }
-})
-
-// TODO
-proto.handle = function(req, res, out) {
+var handle = function(req, res, out) {
     var index = 0
     var self = this
     var slashAdded = false
@@ -131,9 +104,55 @@ proto.handle = function(req, res, out) {
  *
  */
 
-// TODO
+/**
+ * @singcl/express 内部默认的第一级Layer stack溢出时处理函数
+ * 
+ * @callback proto~InnerExceededCallback
+ * @param {Any}      error    第一级Layer stack溢出时相关错误信息
+ *
+ */
+
+/* ================================================================= */
+/**
+ * 创建一个没有原型的对象，该对象将作为Router实例的原型对象使用
+ * JS继承基本分为两大类：类继承 和 原型继承
+ * @namespace {Object} proto
+ */ 
+var proto = Object.create(null)
+
+/**
+ * 路由原型对象上添加相关方法
+ */
+proto.handle = handle
 proto.route = route
 proto.use   = use
+
+/**
+ * 遍历所有http请求方法，然后添加到router的原型对象上
+ * 这样router实例就具有所有http 请求方法
+ */
+methods.forEach(function(method) {
+    proto[method] = function(path) {
+        var route = this.route(path)
+        route[method].apply(route, Array.prototype.slice.call(arguments, 1))
+        return this 
+    }
+})
+
+/**
+ * @desc Router 不是真的的构造函数，类似工厂函数 （可直接执行 也可以new 执行）
+ * @constructor
+ */
+function Router() {
+    function router(req, res, next) {
+        router.handle(req, res, next)
+    }
+    Object.setPrototypeOf(router, proto)
+    router.stack = []
+    // // 声明一个对象，用来缓存路径参数名它对应的回调函数数组
+    // router.paramCallbacks = {}
+    return router
+}
 
 /**
  * Express Router Constructor module
