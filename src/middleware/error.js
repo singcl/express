@@ -13,9 +13,9 @@ module.exports = function(callback) {
             callback(err, req, res, next)
         } else {
             res.writeHead(500, {'Content-Type': 'text/plain;charset=utf-8'})
-            res.write(err)
+            res.write('[Error Middleware]:' + err)
             res.end(function() {
-                console.log('Middleware error [default] | 错误【 ' + err + ' 】已经成功处理！' )
+                console.log('[Error Middleware][default]: 错误【 ' + err + ' 】已经成功处理！' )
             })
         }
     }

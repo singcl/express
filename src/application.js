@@ -64,13 +64,13 @@ Application.prototype.listen = function() {
         function done(err) {
             if (err) {
                 res.writeHead(500, {'Content-Type': 'text/plain;charset=utf-8'})
-                res.write('errorMsg:' + err, 'utf8')
+                res.write('[Inner Defualt]:' + err, 'utf8')
                 res.end(function() {
                     console.log('默认错误处理函数[done(err)] - 错误以处理！')
                 })
             } else {
                 res.writeHead(404, {'Content-Type': 'text/plain;charset=utf-8'})
-                res.write('Cannot 【' + req.method + '】【' + req.url + '】')
+                res.write('[Inner Defualt]:Cannot 【' + req.method + '】【' + req.url + '】')
                 res.end(function() {
                     console.log('默认错误处理函数[done()] - 错误以处理！')
                 })
