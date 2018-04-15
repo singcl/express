@@ -14,30 +14,27 @@ var compose = function(req, res, out) {
 
     var pathname = url.parse(req.url, true).pathname
 
-    // BUG:
+    // BUG FIXED
     // 如果全局中间件后面紧跟一个路由中间件
     // 访问该路由时，全局中间件中 next 出来的 error 信息将会丢失
     function next(err) {
-        if (index >= ctx.stack.length) {
-            return out(err)
-        }
+        if (index >= ctx.stack.length) return out(err)
         var layer = ctx.stack[index++]
+
+        if (err) return layer.handleError(err, req, res, next)
+        
         if (layer.match(pathname)) {
             if (!layer.route) {
-                if (err) {
-                    layer.handleError(err, req, res, next)
-                } else {
-                    layer.handleRequest(req, res, next)
-                }
+                layer.handleRequest(req, res, next)
             } else {
-                if (layer.route && layer.route.handleMethod(req.method)) {
+                if (layer.route.handleMethod(req.method)) {
                     layer.handleRequest(req, res, next)
                 } else {
-                    next(err)
+                    next()
                 }
             }
         } else {
-            next(err)
+            next()
         }
     }
     next()
