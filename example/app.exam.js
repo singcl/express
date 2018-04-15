@@ -7,13 +7,13 @@ var app = new Express()
 app.use(function(req, res, next) {
     // 告诉客户端以UTF-8的方式解析 设置charset=utf-8解决前端拿到的数据中文乱码
     res.setHeader('Content-Type', 'text/plain;charset=utf-8')
-    next('全局中间件错误捕获：next(err)')
+    next('[全局]-中间件错误捕获：next(err)')
 })
 
 app.get('/example', function(req, res, next) {
     // 告诉客户端以UTF-8的方式解析 设置charset=utf-8解决前端拿到的数据中文乱码
     res.setHeader('Content-Type', 'text/plain;charset=utf-8')
-    next('路由中间件错误捕获：next(err)')
+    next('[路由]-中间件错误捕获：next(err)')
 })
 
 app.get('/user', function(req, res, next) {
