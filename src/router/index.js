@@ -8,11 +8,15 @@ var methods = require('methods')
  * @param {Middleware} handler  全局中间件函数
  */
 var use = function(path, handler) {
+    // 如果use函数只提供一个中间件参数而不提供path的话
+    // use(middleware)
     if (typeof handler !== 'function') {
         handler = path
         path = '/'
     }
 
+    // 默认两个参数的处理
+    // use(path, middleware)
     var layer = new Layer(path, handler)
     layer.route = undefined
     this.stack.push(layer)

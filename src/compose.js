@@ -10,7 +10,7 @@ var url = require('url')
  */
 var compose = function(req, res, out) {
     var index = 0
-    var self = this
+    var ctx = this
     var slashAdded = false
     var removed = ''
 
@@ -25,10 +25,10 @@ var compose = function(req, res, out) {
             req.url = removed + req.url
             removed = ''
         }
-        if (index >= self.stack.length) {
+        if (index >= ctx.stack.length) {
             return out(err)
         }
-        var layer = self.stack[index++]
+        var layer = ctx.stack[index++]
         if (layer.match(pathname)) {
             if (!layer.route) {
                 removed = layer.path

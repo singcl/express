@@ -64,7 +64,7 @@ Route.prototype.dispatch = function(req, res, out) {
             next()
         }
     }
-    next()
+    next() 
 }
 
 /**
