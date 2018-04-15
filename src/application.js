@@ -1,6 +1,13 @@
+/*!
+ * @singcl/express
+ * Copyright(c) 2018-2018 singcl
+ * BSD-3 Licensed
+ */
+
 var http = require('http')
-var Router = require('./router')
 var methods = require('methods')
+var Router = require('./router')
+var compose = require('./compose')
 
 /**
  * @description Express Application 构造函数
@@ -51,7 +58,7 @@ Application.prototype.listen = function() {
     // 确保原型方法都没有调用的时候this._router存在
     this.lazyRouter()
 
-    var self = this
+    var router = this._router
     var server = http.createServer(function(req, res) {
         // 异常/错误 处理函数done
         function done(err) {
@@ -71,8 +78,7 @@ Application.prototype.listen = function() {
         }
         // 客户端请求流处理函数执行
         // 来自客户端的所有HTTP请求都会经过此处理函数
-        // 该处理函数内部由一系列中间件组成
-        self._router.handle(req, res, done)
+        compose.call(router, req, res, done)
     })
 
     // 调用http server 的listen 方法

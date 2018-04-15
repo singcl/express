@@ -1,6 +1,5 @@
 var Route = require('./route')
 var Layer = require('./layer')
-var url = require('url')
 var methods = require('methods')
 
 /**
@@ -21,62 +20,6 @@ var use = function(path, handler) {
 }
 
 /**
- * 客户端请求流处理函数
- * 来自客户端的所有HTTP请求都会经过此处理函数
- * 该处理函数内部由一系列中间件组成
- * @param {Object}                      req    request对象 Stream流
- * @param {Object}                      res    response对象 Stream流
- * @param {proto~InnerExceededCallback} out    @singcl/express 内部默认的第一级Layer stack溢出时处理函数
- */
-var handle = function(req, res, out) {
-    var index = 0
-    var self = this
-    var slashAdded = false
-    var removed = ''
-
-    var pathname = url.parse(req.url, true).pathname
-    function next(err) {
-        if (slashAdded) {
-            req.url = ''
-            slashAdded = false
-        }
-
-        if (removed.length > 0) {
-            req.url = removed + req.url
-            removed = ''
-        }
-        if (index >= self.stack.length) {
-            return out(err)
-        }
-        var layer = self.stack[index++]
-        if (layer.match(pathname)) {
-            if (!layer.route) {
-                removed = layer.path
-                req.url = req.url.slice(removed.length)
-                if (err) {
-                    layer.handleError(err, req, res, next)
-                } else {
-                    if (req.url === '') {
-                        req.url = '/'
-                        slashAdded = true
-                    }
-                    layer.handleRequest(req, res, next)
-                }
-            } else {
-                if (layer.route && layer.route.handleMethod(req.method)) {
-                    layer.handleRequest(req, res, next)
-                } else {
-                    next(err)
-                }
-            }
-        } else {
-            next(err)
-        }
-    }
-    next()
-}
-
-/**
  * This callback is displayed as a global member.
  * Express 中间件函数
  * 
@@ -84,14 +27,6 @@ var handle = function(req, res, out) {
  * @param {Object}      req    request对象 Stream流
  * @param {Object}      res    response对象 Stream流
  * @param {Function}    next   next函数-当前layer出栈，下一个layer入栈。即执行权交给下个中间件
- *
- */
-
-/**
- * @singcl/express 内部默认的第一级Layer stack溢出时处理函数
- * 
- * @callback proto~InnerExceededCallback
- * @param {Any}      error    第一级Layer stack溢出时相关错误信息
  *
  */
 
@@ -106,7 +41,6 @@ var proto = Object.create(null)
 /**
  * 路由原型对象上添加相关方法
  */
-proto.handle    = handle
 proto.use       = use
 
 /**
@@ -147,9 +81,7 @@ methods.forEach(function(method) {
  * @constructor
  */
 function Router() {
-    function router(req, res, next) {
-        router.handle(req, res, next)
-    }
+    function router() {}
     Object.setPrototypeOf(router, proto)
     router.stack = []
     // // 声明一个对象，用来缓存路径参数名它对应的回调函数数组
