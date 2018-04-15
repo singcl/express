@@ -13,6 +13,10 @@ var compose = function(req, res, out) {
     var ctx = this
 
     var pathname = url.parse(req.url, true).pathname
+
+    // BUG:
+    // 如果全局中间件后面紧跟一个路由中间件
+    // 访问该路由时，全局中间件中 next 出来的 error 信息将会丢失
     function next(err) {
         if (index >= ctx.stack.length) {
             return out(err)
