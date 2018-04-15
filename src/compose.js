@@ -11,35 +11,18 @@ var url = require('url')
 var compose = function(req, res, out) {
     var index = 0
     var ctx = this
-    var slashAdded = false
-    var removed = ''
 
     var pathname = url.parse(req.url, true).pathname
     function next(err) {
-        if (slashAdded) {
-            req.url = ''
-            slashAdded = false
-        }
-
-        if (removed.length > 0) {
-            req.url = removed + req.url
-            removed = ''
-        }
         if (index >= ctx.stack.length) {
             return out(err)
         }
         var layer = ctx.stack[index++]
         if (layer.match(pathname)) {
             if (!layer.route) {
-                removed = layer.path
-                req.url = req.url.slice(removed.length)
                 if (err) {
                     layer.handleError(err, req, res, next)
                 } else {
-                    if (req.url === '') {
-                        req.url = '/'
-                        slashAdded = true
-                    }
                     layer.handleRequest(req, res, next)
                 }
             } else {
