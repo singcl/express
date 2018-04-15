@@ -21,23 +21,6 @@ var use = function(path, handler) {
 }
 
 /**
- * 接受客户端请求后，根据请求的path 生成第一级 Layer 层，Layer 中包含一个Route 实例  ？？？
- * Route实例的 stack 队列中包含一系列 第二级Layer，第二级Layer是对 路由中间件 的封装 ？？？
- * @param {String} path 路由路径字符串
- * @memberof proto
- * @function
- * @name route
- * @returns {Object} 返回一个Route实例
- */
-var route = function(path) {
-    var route = new Route(path)
-    var layer = new Layer(path, route.dispatch.bind(route))
-    layer.route = route
-    this.stack.push(layer)
-    return route
-}
-
-/**
  * 客户端请求流处理函数
  * 来自客户端的所有HTTP请求都会经过此处理函数
  * 该处理函数内部由一系列中间件组成
@@ -123,22 +106,42 @@ var proto = Object.create(null)
 /**
  * 路由原型对象上添加相关方法
  */
-proto.handle = handle
-proto.route = route
-proto.use   = use
+proto.handle    = handle
+proto.use       = use
+
+/**
+ * 私有方法内部使用，不需要暴露在proto原型上
+ * 接受客户端请求后，根据请求的path 生成第一级 Layer 层，Layer 中包含一个Route 实例  ？？？
+ * Route实例的 stack 队列中包含一系列 第二级Layer，第二级Layer是对 路由中间件 的封装 ？？？
+ * @param {String} path 路由路径字符串
+ * @memberof proto
+ * @function
+ * @name route
+ * @private
+ * @returns {Object} 返回一个Route实例
+ */
+function routeCreator(path) {
+    var route = new Route(path)
+    var layer = new Layer(path, route.dispatch.bind(route))
+    layer.route = route
+    this.stack.push(layer)
+    return route
+}
 
 /**
  * 遍历所有http请求方法，然后添加到router的原型对象上
  * 这样router实例就具有所有http 请求方法
+ * @this Router实例对象
  */
 methods.forEach(function(method) {
     proto[method] = function(path) {
-        var route = this.route(path)
+        var route = routeCreator.call(this, path)
         route[method].apply(route, Array.prototype.slice.call(arguments, 1))
-        return this 
+        return this
     }
 })
 
+/* ================================================================= */
 /**
  * @desc Router 不是真的的构造函数，类似工厂函数 （可直接执行 也可以new 执行）
  * @constructor
