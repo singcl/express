@@ -5,6 +5,7 @@
  * @param {Object}  req     请求流
  * @param {Object}  res     响应流
  * @param {Object}  out     控制权转移
+ * @this route
  */
 var compose = function(req, res, out) {
     var index = 0
