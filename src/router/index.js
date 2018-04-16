@@ -1,6 +1,7 @@
+var methods = require('methods')
 var Route = require('./route')
 var Layer = require('./layer')
-var methods = require('methods')
+var compose = require('./compose')
 
 /**
  * @desc Express 加载全局中间件的方法
@@ -48,22 +49,20 @@ var proto = Object.create(null)
 proto.use       = use
 
 /**
- * 私有方法内部使用，不需要暴露在proto原型上
- * 接受客户端请求后，根据请求的path 生成第一级 Layer 层，Layer 中包含一个Route 实例  ？？？
- * Route实例的 stack 队列中包含一系列 第二级Layer，第二级Layer是对 路由中间件 的封装 ？？？
- * @param {String} path 路由路径字符串
- * @memberof proto
- * @function
- * @name route
+ * 私有方法内部使用
+ * 接受客户端请求后，根据请求的path 生成第一级 Layer 层，Layer 中包含一个Route 实例
+ * Route实例的 stack 队列中包含一系列 第二级Layer，第二级Layer是对 路由中间件 的封装
+ * @param {String} path     路由路径字符串
+ * @param {String} route    一个route 实例
+ * @function stackLocalLayer
  * @private
- * @returns {Object} 返回一个Route实例
  */
-function routeCreator(path) {
-    var route = new Route(path)
-    var layer = new Layer(path, route.dispatch.bind(route))
+function stackLocalLayer(path, route) {
+    // 指定compose函数的上下文
+    // compose 函数作为 handler 传入
+    var layer = new Layer(path, compose.bind(route))
     layer.route = route
     this.stack.push(layer)
-    return route
 }
 
 /**
@@ -73,8 +72,12 @@ function routeCreator(path) {
  */
 methods.forEach(function(method) {
     proto[method] = function(path) {
-        var route = routeCreator.call(this, path)
+        var route = new Route(path)
+        // 执行route 的method 相关方法
+        // 把一系列的路由中间件经Layer 包装后push 进route 的stack 中
         route[method].apply(route, Array.prototype.slice.call(arguments, 1))
+        // 新建一个一级Layer push进 router 的stack 中
+        stackLocalLayer.call(this, path, route)
         return this
     }
 })
