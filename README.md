@@ -13,7 +13,7 @@
 
 ### example
 ```js
-var opn = require('opn')
+// var opn = require('opn')
 var error = require('@singcl/express-error')
 var express = require('@singcl/express')
 var app = express()
@@ -55,6 +55,7 @@ app.use(error())
 // 
 app.listen(3000, function() {
     console.log('node server start at port 3000!')
+    // opn('http://127.0.0.1:3000')
 })
 ```
 
