@@ -28,23 +28,25 @@ function Layer(path, handler) {
  * @description 传入的路径是否匹配
  * @name Layer#match
  * @function
- * @param {String}  path  请求路径
+ * @param {String}  pathname  经url 模块解析出来的客户端请求路径
  */
-Layer.prototype.match = function(path) {
-    if (this.path === path) return true
+Layer.prototype.match = function(pathname) {
+    if (this.path === pathname) return true
 
     // 如果这个Layer是一个全局中间件的 Layer
     if (!this.route) {
         // app.use(function(req, res, next) {...})
+        // all pathname will return true
         if (this.path === '/') return true
         // app.use('/blogs', function(req, res, next) {...})
-        return path.startsWith(this.path + '/') 
+        // pathname like this: '/blogs/blog' will return true.
+        return pathname.startsWith(this.path + '/') 
     }
 
     // 如果这个Layer是一个类似/user/:uuid 的路由的 Layer
     if (this.route) {
-        //
-        var matches = this.regexp.exec(path)
+        // 正则表达式exec
+        var matches = this.regexp.exec(pathname)
         if (matches) { return true }
     }
     return false
