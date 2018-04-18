@@ -1,7 +1,7 @@
 ![Express@singcl](./src/img/express.jpg)
 ## 🐠 Express
 
-[![Travis](https://img.shields.io/travis/singcl/express.svg)](https://www.travis-ci.org/singcl/express)
+[![Travis](https://img.shields.io/travis/singcl/express.svg?style=flat-square)](https://www.travis-ci.org/singcl/express)
 [![npm (scoped)](https://img.shields.io/npm/v/@singcl/express.svg?style=flat-square)](https://www.npmjs.com/package/@singcl/express)
 [![code style: prettier](https://img.shields.io/badge/code_style-prettier-10de6e.svg?style=flat-square)](https://github.com/prettier/prettier)
 ![David](https://img.shields.io/david/dev/singcl/express.svg?style=flat-square)
