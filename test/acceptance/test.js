@@ -1,5 +1,6 @@
 var assert = require('assert')
 
+/* global describe it  */
 // Mocha 测试用例写法示例
 describe('Array', function() {
     describe('#indexOf()', function() {

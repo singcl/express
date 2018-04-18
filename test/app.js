@@ -2,7 +2,7 @@
 
 var assert = require('assert')
 var express = require('..')
-var request = require('supertest')
+// var request = require('supertest')
 
 /* global describe it  */
 describe('app', function() {
