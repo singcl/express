@@ -1,7 +1,10 @@
+'use strict'
+
 var assert = require('assert')
 var express = require('..')
 var request = require('supertest')
 
+/* global describe it  */
 describe('app', function() {
     // 测试@singcl/express 是否继承了Event Emitter
     it('should inherit from event emitter', function(done) {
