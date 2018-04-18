@@ -2,7 +2,7 @@
   "name": "@singcl/express",
   "version": "0.0.8",
   "description": "A counterfeit Express",
-  "main": "src/express.js",
+  "main": "index.js",
   "directories": {
     "example": "example"
   },
