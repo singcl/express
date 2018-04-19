@@ -4,24 +4,37 @@
  * github: https://github.com/singcl/express
  * BSD-3 Licensed
  */
-var EventEmitter = require('events').EventEmitter
-var Application = require('./application')
+
+'use strict'
 
 /**
- * express Creator
- * @returns {Function} express app 实例
+ * Module dependencies.
+ */
+var EventEmitter = require('events').EventEmitter
+var mixin = require('merge-descriptors')
+var proto = require('./application')
+
+/**
+ * Create an express application.
+ *
+ * @return {Function}
+ * @api public
  */
 function express() {
-    var app = function(req, res, next) {}
-    // 原型对象合并
-    var proto = Object.assign({},  Application.prototype, EventEmitter.prototype)
-    // 修改express app的原型链 __proto___
-    Object.setPrototypeOf(app, proto)
+    var app = function(req, res, next) {
+        app.handle(req, res, next)
+    }
+
+    mixin(app, EventEmitter.prototype, false)
+    mixin(app, proto, false)
+
+    app.init()
+
     return app
 }
 
 /**
- * Express App Creator
+ * Expose `createApplication()`.
  * @module
  */
-module.exports = express
+exports = module.exports = express
