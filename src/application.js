@@ -5,10 +5,120 @@
  * BSD-3 Licensed
  */
 
-var http = require('http')
-var methods = require('methods')
-var Router = require('./router')
-var compose = require('./compose')
+'use strict'
+
+/**
+ * Module dependencies
+ * @private
+ */
+var http                =       require('http')
+var methods             =       require('methods')
+var debug               =       require('debug')('@singcl/express:application')
+var finalhandler        =       require('finalhandler')
+var Router              =       require('./router')
+var compose             =       require('./compose')
+
+/**
+ * Application prototype
+ */
+var app = exports = module.exports = {}
+
+/**
+ * Initialize the express server
+ * - setup default configuration
+ * - setup default middleware
+ * - setup route reflection methods
+ * 
+ * @this {Object} express server instance
+ * @private
+ */
+app.init = function init() {
+    //
+    this.defaultConfiguration()
+}
+
+/**
+ * Initialize application configuration
+ * @private
+ */
+app.defaultConfiguration = function defaultConfiguration() {
+    //
+}
+
+/**
+ * lazily adds the base router if it has not yet been added.
+ *
+ * We cannot add the base router in the defaultConfiguration because
+ * it reads app settings which might be set after that has run.
+ *
+ * @private
+ */
+app.lazyRouter = function lazyRouter() {
+    if (!this._router) {
+        this._router = new Router()
+    }
+}
+
+/**
+ * Dispatch a req, res pair into the application. Starts pipeline processing.
+ *
+ * If no callback is provided, then default error handlers will respond
+ * in the event of an error bubbling through the stack.
+ *
+ * @private
+ */
+app.handle = function handle(req, res, callback) {
+    var router = this._router
+
+    // final handler
+    var done = callback || finalhandler(req, res, {
+        env: this.get('env'),
+        onerror:logerror.bind(this)
+    })
+
+    // no routes
+    if (!router) {
+        debug('no routes defined on app')
+        done()
+        return
+    }
+
+    router.handle(req, res, done)
+}
+
+
+
+
+
+
+
+
+
+/**
+ *  Log error using console.error.
+ * 
+ * @param {Error} err
+ * @private
+ */
+function logerror(err) {
+    /* istanbul ignore next */
+    if (this.get('env') !== 'test') console.error(err.stack || err.toString())
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /**
  * @description Express Application 构造函数
