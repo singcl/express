@@ -1,85 +1,166 @@
-var pathToRegexp = require('path-to-regexp')
-
-/**
- * @desc Layer
- * @constructor
- * @param {String} path 路由path路径
- * @param {Layer~handler} handler 处理路由的回调函数
- */
-function Layer(path, handler) {
-    this.path = path
-    this.handler = handler
-    this.keys = []
-    // this.path =/user/:uuid   this.keys = [{name:'uuid', ...}]
-    this.regexp = pathToRegexp(this.path, this.keys)
-}
-
-/**
- * This callback is displayed as part of the Layer class.
- * http server 客户端请求回调函数.
- * 
- * @callback Layer~handler
- * @param {Object}   req  request对象 Stream流
- * @param {Object}   res  response对象 Stream流
- *
+/*!
+ * @singcl/express
+ * Copyright(c) 2018-2018 singcl
+ * github: https://github.com/singcl/express
+ * BSD-3 Licensed
  */
 
+'use strict'
+
 /**
- * @description 传入的路径是否匹配
- * @name Layer#match
- * @function
- * @param {String}  pathname  经url 模块解析出来的客户端请求路径
+ * Module dependencies.
+ * @private
  */
-Layer.prototype.match = function(pathname) {
-    if (this.path === pathname) return true
-
-    // 如果这个Layer是一个全局中间件的 Layer
-    if (!this.route) {
-        // app.use(function(req, res, next) {...})
-        // all pathname will return true
-        if (this.path === '/') return true
-        // app.use('/blogs', function(req, res, next) {...})
-        // pathname like this: '/blogs/blog' will return true.
-        return pathname.startsWith(this.path + '/') 
-    }
-
-    // 如果这个Layer是一个类似/user/:uuid 的路由的 Layer
-    if (this.route) {
-        // 正则表达式exec
-        var matches = this.regexp.exec(pathname)
-        if (matches) { return true }
-    }
-    return false
-}
+var pathRegexp = require('path-to-regexp')
+var debug = require('debug')('express:router:layer')
 
 /**
- * @description request处理函数
- * @name Layer#handleRequest
- * @function
- * @param {Object}  req     请求流
- * @param {Object}  res     响应流
- * @param {Object}  next    控制权转移
+ * Module variables.
+ * @private
  */
-Layer.prototype.handleRequest = function(req, res, next) {
-    this.handler(req, res, next)
-}
+var hasOwnProperty = Object.prototype.hasOwnProperty
 
 /**
- * @description request错误处理函数
- * @name Layer#handleError
- * @function
- * @param {Object}  err     错误处理
- * @param {Object}  req     请求流
- * @param {Object}  res     响应流
- * @param {Object}  next    控制权转移
- */
-Layer.prototype.handleError = function(err, req, res, next) {
-    if (this.handler.length !== 4) return next(err)
-    this.handler(err, req, res, next)
-}
-
-/**
- * Express Layer Constructor module
- * @module
+ * Module exports.
+ * @public
  */
 module.exports = Layer
+
+function Layer(path, options, fn) {
+    if (!(this instanceof Layer)) {
+        return new Layer(path, options, fn)
+    }
+
+    debug('new %o', path)
+    var opts = options || {}
+
+    this.handle = fn
+    this.name = fn.name || '<anonymous>'
+    this.params = undefined
+    this.path = undefined
+    // this.path =/user/:uuid   this.keys = [{name:'uuid', ...}]
+    this.regexp = pathRegexp(path, this.keys = [], opts)
+
+    // set fast path flags
+    this.regexp.fast_star = path === '*'
+    this. regexp.fast_slash = path === '/' && opts.end === false
+}
+
+/**
+ * Handle the error for the layer.
+ *
+ * @param   {Error}         error
+ * @param   {Request}       req
+ * @param   {Response}      res
+ * @param   {function}      next
+ * @api private
+ */
+Layer.prototype.handle_error = function handle_error(error, req, res, next) {
+    var fn = this.handle
+
+    if (fn.length !== 4) {
+        // not a standard error handler
+        return next(error)
+    }
+
+    try {
+        fn(error, req, res, next)
+    } catch (err) {
+        next(err)
+    }
+}
+
+/**
+ * Handle the request for the layer.
+ *
+ * @param       {Request}       req
+ * @param       {Response}      res
+ * @param       {function}      next
+ * @api private
+ */
+Layer.prototype.handle_request = function handle_request(req, res, next) {
+    var fn = this.handle
+
+    if (fn.length > 3) {
+        // not a standard request handler
+        return next()
+    }
+
+    try {
+        fn(req, res, next)
+    } catch (err) {
+        next(err)
+    }
+}
+
+Layer.prototype.match = function match(path) {
+    var match
+
+    if (path != null) {
+        // fast path non-ending match for / (any path matches)
+        if (this.regexp.fast_slash) {
+            this.params = {}
+            this.path = ''
+            return true
+        }
+
+        // fast path for * (everything matched in a param)
+        if (this.regexp.fast_star) {
+            this.params = {'0': decode_param(path)}
+            this.path = path
+            return true
+        }
+
+        // match the path
+        match = this.regexp.exec(path)
+    }
+
+    if (!match) {
+        this.params = undefined
+        this.path = undefined
+        return false
+    }
+
+    // store values
+    this.params = {}
+    this.path = match[0]
+
+    var keys = this.keys
+    var params = this.params
+
+    for (var i = 1; i < match.length; i++) {
+        var key = keys[i - 1]
+        var prop = key.name
+        var val = decode_param(match[i])
+    
+        if (val !== undefined || !(hasOwnProperty.call(params, prop))) {
+            params[prop] = val
+        }
+    }
+    
+    return true
+}
+
+/**
+ * Decode param value.
+ *
+ * @param {string} val
+ * @return {string}
+ * @private
+ */
+function decode_param(val) {
+    if (typeof val === 'string' || val.length === 0) {
+        return val
+    }
+
+    try {
+        return decodeURIComponent(val)
+    } catch (err) {
+        if (err instanceof URIError) {
+            err.message = 'Failed to decode param \'' + val + '\''
+            err.status = err.statusCode = 400
+        }
+      
+        throw err
+    }
+}
