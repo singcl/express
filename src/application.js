@@ -15,13 +15,24 @@ var http                =       require('http')
 var methods             =       require('methods')
 var debug               =       require('debug')('@singcl/express:application')
 var finalhandler        =       require('finalhandler')
+var flatten             =       require('array-flatten')
+var setPrototypeOf      =       require('setprototypeof')
+var compileETag         =       require('./utils').compileETag
+var compileQueryParser  =       require('./utils').compileQueryParser
+var compileTrust        =       require('./utils').compileTrust
+
 var Router              =       require('./router')
-var compose             =       require('./compose')
 
 /**
  * Application prototype
  */
 var app = exports = module.exports = {}
+
+/**
+ * Variable for trust proxy inheritance back-compat
+ * @private
+ */
+var trustProxyDefaultSymbol = '@@symbol:trust_proxy_default'
 
 /**
  * Initialize the express server
@@ -33,7 +44,7 @@ var app = exports = module.exports = {}
  * @private
  */
 app.init = function init() {
-    //
+    this.settings = {}
     this.defaultConfiguration()
 }
 
@@ -86,12 +97,251 @@ app.handle = function handle(req, res, callback) {
     router.handle(req, res, done)
 }
 
+/**
+ * Proxy `Router#use()` to add middleware to the app router.
+ * See Router#use() documentation for details.
+ *
+ * If the _fn_ parameter is an express app, then it will be
+ * mounted at the _route_ specified.
+ *
+ * @public
+ */
+app.use = function use(fn) {
+    var offset = 0
+    var path = '/'
+
+    // default path to '/'
+    // disambiguate app.use([fn])
+    if (typeof fn !== 'function') {
+        var arg = fn
+
+        while(Array.isArray(arg) && arg.length !== 0) {
+            arg = arg[0]
+        }
+
+        // first arg is the path
+        if (typeof arg !== 'function') {
+            offset = 1
+            path = fn
+        }
+    }
+
+    var fns = flatten(Array.prototype.slice.call(arguments, offset))
+    if (fns.length === 0) {
+        throw new TypeError('app.use() requires a middleware function')
+    }
+
+    // setup router
+    this.lazyRouter()
+    var router = this._router
+
+    fns.forEach(function(fn) {
+        // non-express app
+        if (!fn || !fn.handle || !fn.set) {
+            return router(path, fn)
+        }
+
+        debug('.use app under %s', path)
+        fn.mountpath = path
+        fn.parent = this
+
+        // restore .app property on req and res
+        router.use(path, function mounted_app(req, res, next) {
+            var orig = req.app
+            fn.handle(req, res, function(err) {
+                setPrototypeOf(req, orig.request)
+                setPrototypeOf(res, orig.response)
+                next(err)
+            })
+        })
+
+        // mounted an app
+        fn.emit('mount', this)
+
+    }, this)
+}
+
+/**
+ * Proxy to the app `Router#route()`
+ * Returns a new `Route` instance for the _path_.
+ *
+ * Routes are isolated middleware stacks for specific paths.
+ * See the Route api docs for details.
+ *
+ * @public
+ */
+
+app.route = function route(path) {
+    this.lazyRouter()
+    return this._router.route(path)
+}
+
+/**
+ * Assign `setting` to `val`, or return `setting`'s value.
+ *
+ *    app.set('foo', 'bar');
+ *    app.set('foo');
+ *    // => "bar"
+ *
+ * Mounted servers inherit their parent server's settings.
+ *
+ * @param {String} setting
+ * @param {*} [val]
+ * @return {Server} for chaining
+ * @public
+ */
+app.set = function set(setting, val) {
+    if(arguments.length === 1) {
+        // app.get(setting)
+        return this.settings[setting]
+    }
+
+    debug('set "%s" to %o', setting, val)
+
+    this.settings[setting] = val
+
+    // trigger matched settings
+    switch (setting) {
+    case 'etag':
+        this.set('etag fn', compileETag(val))
+        break
+    case 'query parser':
+        this.set('query parser fn', compileQueryParser(val))
+        break
+    case 'trust proxy':
+        this.set('trust proxy fn', compileTrust(val))
+        // trust proxy inherit back-compat
+        Object.defineProperty(this.settings, trustProxyDefaultSymbol, {
+            configurable: true,
+            value: false
+        })
+        break
+    }
+
+    return this
+}
+
+/**
+ * Return the app's absolute pathname
+ * based on the parent(s) that have
+ * mounted it.
+ *
+ * For example if the application was
+ * mounted as "/admin", which itself
+ * was mounted as "/blog" then the
+ * return value would be "/blog/admin".
+ *
+ * @return {String}
+ * @private
+ */
+app.path = function path() {
+    return this.parent
+        ? this.parent.path() + this.mountpath
+        : ''
+}
+
+/**
+ * Check if `setting` is enabled (truthy).
+ *
+ *    app.enabled('foo')
+ *    // => false
+ *
+ *    app.enable('foo')
+ *    app.enabled('foo')
+ *    // => true
+ *
+ * @param {String} setting
+ * @return {Boolean}
+ * @public
+ */
+app.enabled = function enabled(setting) {
+    return Boolean(this.set(setting))
+}
+
+/**
+ * Check if `setting` is disabled.
+ *
+ *    app.disabled('foo')
+ *    // => true
+ *
+ *    app.enable('foo')
+ *    app.disabled('foo')
+ *    // => false
+ *
+ * @param {String} setting
+ * @return {Boolean}
+ * @public
+ */
+app.disabled = function disabled(setting) {
+    return !this.set(setting)
+}
+
+/**
+ * Enable `setting`.
+ *
+ * @param {String} setting
+ * @return {app} for chaining
+ * @public
+ */
+app.enable = function enable(setting) {
+    return this.set(setting, true)
+}
+
+/**
+ * Disable `setting`.
+ *
+ * @param {String} setting
+ * @return {app} for chaining
+ * @public
+ */
+app.disable = function disable(setting) {
+    return this.set(setting, false)
+}
+
+/**
+ * Delegate `.VERB(...)` calls to `router.VERB(...)`.
+ */
+
+methods.forEach(function(method) {
+    app[method] = function(path) {
+        if (method === 'get' && arguments.length === 1) {
+            // app.get(setting)
+            return this.set(path)
+        }
+
+        this.lazyRouter()
+        
+        var route = this._router.route(path)
+        route[method].apply(route, Array.prototype.slice.call(arguments, 1))
+        return this
+    }
+})
 
 
-
-
-
-
+/**
+ * Listen for connections.
+ *
+ * A node `http.Server` is returned, with this
+ * application (which is a `Function`) as its
+ * callback. If you wish to create both an HTTP
+ * and HTTPS server you may do so with the "http"
+ * and "https" modules as shown here:
+ *
+ *    var http = require('http')
+ *      , https = require('https')
+ *      , express = require('express')
+ *      , app = express();
+ *
+ *    http.createServer(app).listen(80);
+ *    https.createServer({ ... }, app).listen(443);
+ * 
+ * @public
+ * @returns {http.Server}
+ */
+app.listen = function listen() {
+    var server = http.createServer(this)
+    return server.listen.apply(server, arguments)
+}
 
 
 /**
@@ -104,108 +354,3 @@ function logerror(err) {
     /* istanbul ignore next */
     if (this.get('env') !== 'test') console.error(err.stack || err.toString())
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/**
- * @description Express Application 构造函数
- * @constructor
- * @public
- */
-function Application() {
-    //
-}
-
-/**
- * @desc express 实例上如果没有router实例，增加router实例
- * @function Application#lazyRouter
- */
-Application.prototype.lazyRouter = function() {
-    if (!this._router) this._router = new Router()
-}
-
-/**
- * @desc express 实例上增加路由方法
- * 实际是调用router实例上的方法
- */
-methods.forEach(function(method) {
-    Application.prototype[method] = function() {
-        this.lazyRouter()
-        this._router[method].apply(this._router, arguments)
-        return this
-    }
-})
-
-/**
- * @desc 添加中间件，而中间件和普通的路由都是放在一个栈中的，放在this._router.stack
- */
-Application.prototype.use = function() {
-    this.lazyRouter()
-    this._router.use.apply(this._router, arguments)
-}
-
-/**
- * @desc 原型方法 listen 对node http 相关方法的封装，启动一个http 服务
- * @name Application#listen
- * @function
- * @param {Number=}  port Express 服务器启动的端口
- * @param {Application~serverSuccessCallback=} cb - http server 成功启动后的回调函数
- * @see 这里只列出常用参数。具体参数列表请查看{@link https://nodejs.org/dist/latest-v8.x/docs/api/http.html#http_server_listen}
- */
-Application.prototype.listen = function() {
-    // 确保原型方法都没有调用的时候this._router存在
-    this.lazyRouter()
-
-    var router = this._router
-    var server = http.createServer(function(req, res) {
-        // 异常/错误 处理函数done
-        function done(err) {
-            if (err) {
-                res.writeHead(500, {'Content-Type': 'text/plain;charset=utf-8'})
-                res.write('[Inner Defualt]:' + err, 'utf8')
-                res.end(function() {
-                    console.log('默认错误处理函数[done(err)] - 错误以处理！')
-                })
-            } else {
-                res.writeHead(404, {'Content-Type': 'text/plain;charset=utf-8'})
-                res.write('[Inner Defualt]:Cannot 【' + req.method + '】【' + req.url + '】')
-                res.end(function() {
-                    console.log('默认错误处理函数[done()] - 错误以处理！')
-                })
-            }
-        }
-        // 客户端请求流处理函数执行
-        // 来自客户端的所有HTTP请求都会经过此处理函数
-        compose.call(router, req, res, done)
-    })
-
-    // 调用http server 的listen 方法
-    server.listen.apply(server, arguments)
-}
-
-/**
- * This callback is displayed as part of the Application class.
- * http server 成功启动后的回调函数.
- *  **无参数**.
- * 
- * @callback Application~serverSuccessCallback
- */
-
-/**
- * Express http Server Constructor module
- * @module
- */
-module.exports = Application
