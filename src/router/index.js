@@ -11,6 +11,100 @@
  * Module dependencies.
  * @private
  */
+var Route = require('./route')
+var Layer = require('./layer')
+// var methods = require('methods')
+var setPrototypeOf = require('setprototypeof')
+// var mixin = require('utils-merge')
+// var debug = require('debug')('express:router')
+
+/**
+ * Module variables.
+ * @private
+ */
+var objectRegExp = /^\[object (\S+)\]$/
+var slice = Array.prototype.slice
+var toString = Object.prototype.toString
+
+/**
+ * Initialize a new `Router` with the given `options`.
+ *
+ * @param {Object} options
+ * @return {Router} which is an callable function
+ * @public
+ */
+var proto = module.exports = function(options) {
+    var opts = options || {}
+
+    function router(req, res, next) {
+        router.handle(req, res, next)
+    }
+
+    // mixin Router class functions
+    setPrototypeOf(router, proto)
+
+    router.params = {}
+    router._params = []
+    router.caseSensitive = opts.caseSensitive
+    router.mergeParams = opts.mergeParams
+    router.strict = opts.strict
+    router.stack = []
+
+    return router
+}
+
+/**
+ * Create a new Route for the given path.
+ *
+ * Each route contains a separate middleware stack and VERB handlers.
+ *
+ * See the Route api documentation for details on adding handlers
+ * and middleware to routes.
+ *
+ * @param {String} path
+ * @return {Route}
+ * @public
+ */
+proto.route = function route(path) {
+    var route = new Route(path)
+
+    var layer = new Layer(path, {
+        sensitive: this.caseSensitive,
+        strict: this.strict,
+        end: true
+    }, route.dispatch.bind(route))
+
+    layer.route = route
+
+    this.stack.push(layer)
+    return route
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 var methods = require('methods')
 var Route = require('./route')
 var Layer = require('./layer')

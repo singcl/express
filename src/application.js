@@ -66,7 +66,13 @@ app.defaultConfiguration = function defaultConfiguration() {
  */
 app.lazyRouter = function lazyRouter() {
     if (!this._router) {
-        this._router = new Router()
+        this._router = new Router({
+            caseSensitive: this.enabled('case sensitive routing'),
+            strict: this.enabled('strict routing')
+        })
+
+        // this._router.use(query(this.get('query parser fn')))
+        // this._router.use(middleware.init(this))
     }
 }
 
