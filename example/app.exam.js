@@ -1,8 +1,8 @@
 // var express = require('../src/express')
 // var app = express()
 var error = require('../src/middleware/error')
-var Express = require('../src/application')
-var app = new Express()
+var express = require('../src/express')
+var app = express()
 
 app.use(function(req, res, next) {
     // 告诉客户端以UTF-8的方式解析 设置charset=utf-8解决前端拿到的数据中文乱码

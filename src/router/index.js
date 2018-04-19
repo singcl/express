@@ -1,3 +1,16 @@
+/*!
+ * @singcl/express
+ * Copyright(c) 2018-2018 singcl
+ * github: https://github.com/singcl/express
+ * BSD-3 Licensed
+ */
+
+'use strict'
+
+/**
+ * Module dependencies.
+ * @private
+ */
 var methods = require('methods')
 var Route = require('./route')
 var Layer = require('./layer')
