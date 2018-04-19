@@ -14,7 +14,12 @@
         "visualstudio",
         "singcl",
         "finalhandler",
-        "logerror"
+        "logerror",
+        "mountpath",
+        "setprototypeof",
+        "etag",
+        "wetag",
+        "proxyaddr"
     ],
     // flagWords - list of words to be always considered incorrect
     // This is useful for offensive words and common spelling errors.
