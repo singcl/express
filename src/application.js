@@ -145,7 +145,7 @@ app.use = function use(fn) {
     fns.forEach(function(fn) {
         // non-express app
         if (!fn || !fn.handle || !fn.set) {
-            return router(path, fn)
+            return router.use(path, fn)
         }
 
         debug('.use app under %s', path)
@@ -365,5 +365,5 @@ app.listen = function listen() {
  */
 function logerror(err) {
     /* istanbul ignore next */
-    if (this.get('env') !== 'test') console.error(err.stack || err.toString())
+    /* if (this.get('env') !== 'test') */ console.error(err.stack || err.toString())
 }

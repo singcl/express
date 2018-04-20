@@ -11,21 +11,22 @@
  * Module dependencies.
  * @private
  */
-var Route = require('./route')
-var Layer = require('./layer')
+var Route               =       require('./route')
+var Layer               =       require('./layer')
 // var methods = require('methods')
-var setPrototypeOf = require('setprototypeof')
+var setPrototypeOf      =       require('setprototypeof')
 // var mixin = require('utils-merge')
-var debug = require('debug')('express:router')
-var parseUrl = require('parseurl')
+var debug               =       require('debug')('express:router')
+var parseUrl            =       require('parseurl')
+var flatten             =       require('array-flatten')
 
 /**
  * Module variables.
  * @private
  */
-// var objectRegExp = /^\[object (\S+)\]$/
-// var slice = Array.prototype.slice
-// var toString = Object.prototype.toString
+var objectRegExp = /^\[object (\S+)\]$/
+var slice = Array.prototype.slice
+var toString = Object.prototype.toString
 
 /**
  * Initialize a new `Router` with the given `options`.
@@ -264,6 +265,56 @@ proto.process_params = function process_params(layer, called, req, res, done) {
     }
 }
 
+proto.use = function use(fn) {
+    var offset = 0
+    var path = '/'
+
+    // default path to '/'
+    // disambiguate router.use([fn])
+    if (typeof fn !== 'function') {
+        var arg = fn
+
+        while (Array.isArray(arg) && arg.length !== 0) {
+            arg = arg[0]
+        }
+
+        // first arg is the path
+        if (typeof arg !== 'function') {
+            offset = 1
+            path = fn
+        }
+    }
+
+    var callbacks = flatten(slice.call(arguments, offset))
+
+    if (callbacks.length === 0) {
+        throw new TypeError('Router.use() requires a middleware function')
+    }
+
+    for(var i = 0; i < callbacks.length; i++) {
+        var callback = callbacks[i]
+
+        if (typeof callback !== 'function') {
+            throw new TypeError('Router.use() requires a middleware function but got a ' + gettype(callback))
+        }
+
+        // add the middleware
+        debug('use %o %s', path, callback.name || '<anonymous>')
+
+        var layer = new Layer(path, {
+            sensitive: this.caseSensitive,
+            strict: false,
+            end: false
+        }, callback)
+
+        layer.route = undefined
+
+        this.stack.push(layer)
+    }
+
+    return this
+}
+
 // Get get protocol + host for a URL
 function getProtoHost(url) {
     if (typeof url !== 'string' || url.length === 0 || url[0] === '/') {
@@ -323,4 +374,17 @@ function matchLayer(layer, path) {
     } catch (err) {
         return err
     }
+}
+
+// get type for error message
+function gettype(obj) {
+    var type = typeof obj
+  
+    if (type !== 'object') {
+        return type
+    }
+  
+    // inspect [[Class]] for objects
+    return toString.call(obj)
+        .replace(objectRegExp, '$1')
 }
