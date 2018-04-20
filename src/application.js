@@ -17,9 +17,9 @@ var debug               =       require('debug')('@singcl/express:application')
 var finalhandler        =       require('finalhandler')
 var flatten             =       require('array-flatten')
 var setPrototypeOf      =       require('setprototypeof')
-var compileETag         =       require('./utils').compileETag
-var compileQueryParser  =       require('./utils').compileQueryParser
-var compileTrust        =       require('./utils').compileTrust
+// var compileETag         =       require('./utils').compileETag
+// var compileQueryParser  =       require('./utils').compileQueryParser
+// var compileTrust        =       require('./utils').compileTrust
 
 var Router              =       require('./router')
 
@@ -32,7 +32,8 @@ var app = exports = module.exports = {}
  * Variable for trust proxy inheritance back-compat
  * @private
  */
-var trustProxyDefaultSymbol = '@@symbol:trust_proxy_default'
+
+// var trustProxyDefaultSymbol = '@@symbol:trust_proxy_default'
 
 /**
  * Initialize the express server
@@ -66,10 +67,10 @@ app.defaultConfiguration = function defaultConfiguration() {
  */
 app.lazyRouter = function lazyRouter() {
     if (!this._router) {
-        this._router = new Router({
+        this._router = new Router(/*{
             caseSensitive: this.enabled('case sensitive routing'),
             strict: this.enabled('strict routing')
-        })
+        }*/)
 
         // this._router.use(query(this.get('query parser fn')))
         // this._router.use(middleware.init(this))
@@ -89,7 +90,7 @@ app.handle = function handle(req, res, callback) {
 
     // final handler
     var done = callback || finalhandler(req, res, {
-        env: this.get('env'),
+        // env: this.get('env'),
         onerror:logerror.bind(this)
     })
 
@@ -196,36 +197,37 @@ app.route = function route(path) {
  * @return {Server} for chaining
  * @public
  */
-app.set = function set(setting, val) {
-    if(arguments.length === 1) {
-        // app.get(setting)
-        return this.settings[setting]
-    }
 
-    debug('set "%s" to %o', setting, val)
+// app.set = function set(setting, val) {
+//     if(arguments.length === 1) {
+//         // app.get(setting)
+//         return this.settings[setting]
+//     }
 
-    this.settings[setting] = val
+//     debug('set "%s" to %o', setting, val)
 
-    // trigger matched settings
-    switch (setting) {
-    case 'etag':
-        this.set('etag fn', compileETag(val))
-        break
-    case 'query parser':
-        this.set('query parser fn', compileQueryParser(val))
-        break
-    case 'trust proxy':
-        this.set('trust proxy fn', compileTrust(val))
-        // trust proxy inherit back-compat
-        Object.defineProperty(this.settings, trustProxyDefaultSymbol, {
-            configurable: true,
-            value: false
-        })
-        break
-    }
+//     this.settings[setting] = val
 
-    return this
-}
+//     // trigger matched settings
+//     switch (setting) {
+//     case 'etag':
+//         this.set('etag fn', compileETag(val))
+//         break
+//     case 'query parser':
+//         this.set('query parser fn', compileQueryParser(val))
+//         break
+//     case 'trust proxy':
+//         this.set('trust proxy fn', compileTrust(val))
+//         // trust proxy inherit back-compat
+//         Object.defineProperty(this.settings, trustProxyDefaultSymbol, {
+//             configurable: true,
+//             value: false
+//         })
+//         break
+//     }
+
+//     return this
+// }
 
 /**
  * Return the app's absolute pathname
@@ -240,11 +242,12 @@ app.set = function set(setting, val) {
  * @return {String}
  * @private
  */
-app.path = function path() {
-    return this.parent
-        ? this.parent.path() + this.mountpath
-        : ''
-}
+
+// app.path = function path() {
+//     return this.parent
+//         ? this.parent.path() + this.mountpath
+//         : ''
+// }
 
 /**
  * Check if `setting` is enabled (truthy).
@@ -260,9 +263,10 @@ app.path = function path() {
  * @return {Boolean}
  * @public
  */
-app.enabled = function enabled(setting) {
-    return Boolean(this.set(setting))
-}
+
+// app.enabled = function enabled(setting) {
+//     return Boolean(this.set(setting))
+// }
 
 /**
  * Check if `setting` is disabled.
@@ -278,9 +282,10 @@ app.enabled = function enabled(setting) {
  * @return {Boolean}
  * @public
  */
-app.disabled = function disabled(setting) {
-    return !this.set(setting)
-}
+
+// app.disabled = function disabled(setting) {
+//     return !this.set(setting)
+// }
 
 /**
  * Enable `setting`.
@@ -289,9 +294,10 @@ app.disabled = function disabled(setting) {
  * @return {app} for chaining
  * @public
  */
-app.enable = function enable(setting) {
-    return this.set(setting, true)
-}
+
+// app.enable = function enable(setting) {
+//     return this.set(setting, true)
+// }
 
 /**
  * Disable `setting`.
@@ -300,9 +306,10 @@ app.enable = function enable(setting) {
  * @return {app} for chaining
  * @public
  */
-app.disable = function disable(setting) {
-    return this.set(setting, false)
-}
+
+// app.disable = function disable(setting) {
+//     return this.set(setting, false)
+// }
 
 /**
  * Delegate `.VERB(...)` calls to `router.VERB(...)`.
