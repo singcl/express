@@ -16,15 +16,16 @@ var Layer = require('./layer')
 // var methods = require('methods')
 var setPrototypeOf = require('setprototypeof')
 // var mixin = require('utils-merge')
-// var debug = require('debug')('express:router')
+var debug = require('debug')('express:router')
+var parseUrl = require('parseurl')
 
 /**
  * Module variables.
  * @private
  */
-var objectRegExp = /^\[object (\S+)\]$/
-var slice = Array.prototype.slice
-var toString = Object.prototype.toString
+// var objectRegExp = /^\[object (\S+)\]$/
+// var slice = Array.prototype.slice
+// var toString = Object.prototype.toString
 
 /**
  * Initialize a new `Router` with the given `options`.
@@ -80,131 +81,246 @@ proto.route = function route(path) {
     return route
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-var methods = require('methods')
-var Route = require('./route')
-var Layer = require('./layer')
-var compose = require('./compose')
-
 /**
- * @desc Express 加载全局中间件的方法
- * @param {String} path         请求路径
- * @param {Middleware} handler  全局中间件函数
- */
-var use = function(path, handler) {
-    // 如果use函数只提供一个中间件参数而不提供path的话
-    // use(middleware)
-    if (typeof handler !== 'function') {
-        handler = path
-        path = '/'
-    }
-
-    // 默认两个参数的处理
-    // use(path, middleware)
-    var layer = new Layer(path, handler)
-    layer.route = undefined
-    this.stack.push(layer)
-    return this
-}
-
-/**
- * This callback is displayed as a global member.
- * Express 中间件函数
- * 
- * @callback Middleware
- * @param {Object}      req    request对象 Stream流
- * @param {Object}      res    response对象 Stream流
- * @param {Function}    next   next函数-当前layer出栈，下一个layer入栈。即执行权交给下个中间件
- *
- */
-
-/* ================================================================= */
-/**
- * 创建一个没有原型的对象，该对象将作为Router实例的原型对象使用
- * JS继承基本分为两大类：类继承 和 原型继承
- * @namespace {Object} proto
- */ 
-var proto = Object.create(null)
-
-/**
- * 路由原型对象上添加相关方法
- */
-proto.use       = use
-
-/**
- * 私有方法内部使用
- * 接受客户端请求后，根据请求的path 生成第一级 Layer 层，Layer 中包含一个Route 实例
- * Route实例的 stack 队列中包含一系列 第二级Layer，第二级Layer是对 路由中间件 的封装
- * @param {String} path     路由路径字符串
- * @param {String} route    一个route 实例
- * @function stackLocalLayer
+ * Dispatch a req, res into the router.
  * @private
  */
-function stackLocalLayer(path, route) {
-    // 指定compose函数的上下文
-    // compose 函数作为 handler 传入
-    var layer = new Layer(path, compose.bind(route))
-    layer.route = route
-    this.stack.push(layer)
-}
+proto.handle = function handle(req, res, out) {
+    var self = this
 
-/**
- * 遍历所有http请求方法，然后添加到router的原型对象上
- * 这样router实例就具有所有http 请求方法
- * @this Router实例对象
- */
-methods.forEach(function(method) {
-    proto[method] = function(path) {
-        var route = new Route(path)
-        // 执行route 的method 相关方法
-        // 把一系列的路由中间件经Layer 包装后push 进route 的stack 中
-        route[method].apply(route, Array.prototype.slice.call(arguments, 1))
-        // 新建一个一级Layer push进 router 的stack 中
-        stackLocalLayer.call(this, path, route)
-        return this
+    debug('dispatching %s %s', req.method, req.url)
+
+    var idx = 0
+    var protohost = getProtoHost(req.url) || ''
+    var removed = ''
+    var slashAdded = false
+    var paramcalled = {} 
+
+    // middleware and routes
+    var stack = self.stack
+
+    // manage inter-router variables
+    var parentUrl = req.baseUrl || ''
+    var done = restore(out, req, 'baseUrl', 'next', 'params')
+
+    // setup next layer
+    req.next = next
+
+    req.originalUrl = req.originalUrl || req.url
+
+    next()
+
+    function next(err) {
+        var layerError = err === 'route'
+            ? null
+            : err
+        
+        // remove added slash
+        if (slashAdded) {
+            req.url = req.url.substr(1)
+            slashAdded = false
+        }
+
+        // restore altered req.url
+        if (removed.length !== 0) {
+            //
+        }
+
+        // signal to exit router
+        if (layerError === 'router') {
+            setImmediate(done, null)
+            return
+        }
+
+        // no more matching layers
+        if (idx > stack.length) {
+            setImmediate(done, layerError)
+            return
+        }
+
+        // get pathname of request
+        var path = getPathname(req)
+
+        if (path == null) {
+            return done(layerError)
+        }
+
+        // find next matching layer
+        var layer
+        var match
+        var route
+
+        while(match !== true && idx < stack.length) {
+            layer = stack[idx++]
+            match = matchLayer(layer, path)
+            route = layer.route
+
+            if (typeof match !== 'boolean') {
+                // hold on to layerError
+                layerError = layerError || match
+            }
+
+            if (match !== true) {
+                continue
+            }
+
+            if(!route) {
+                // process non-route handlers normally
+                continue
+            }
+
+            if (layerError) {
+                // routes do not match with a pending error
+                match = false
+                continue
+            }
+
+            var method = req.method
+            var has_method = route._handles_method(method)
+
+            // don't even bother matching route
+            if (!has_method && method !== 'HEAD') {
+                match = false
+                continue
+            }
+        }
+
+        // no match
+        if (match !== true) {
+            return done(layerError)
+        }
+
+        // store route for dispatch on change
+        if (route) {
+            req.route = route
+        }
+
+        // Capture one-time layer values
+        req.params = layer.params
+        
+        var layerPath = layer.path
+
+        // this should be done for the layer
+        self.process_params(layer, paramcalled, req, res, function(err) {
+            if (err) {
+                return next(layerError || err)
+            }
+
+            if (route) {
+                return layer.handle_request(req, res, next)
+            }
+
+            trim_prefix(layer, layerError, layerPath, path)
+        })
     }
-})
 
-/* ================================================================= */
-/**
- * @desc Router 不是真的的构造函数，类似工厂函数 （可直接执行 也可以new 执行）
- * @constructor
- */
-function Router() {
-    function router() {}
-    Object.setPrototypeOf(router, proto)
-    router.stack = []
-    // // 声明一个对象，用来缓存路径参数名它对应的回调函数数组
-    // router.paramCallbacks = {}
-    return router
+    function trim_prefix(layer, layerError, layerPath, path) {
+        if (layerPath.length !== 0) {
+            // Validate path breaks on a path separator
+            var c = path[layerPath.length]
+            if (c && c !== '/' && c !== '.') return next(layerError)
+
+            // Trim off the part of the url that matches the route
+            // middleware (.use stuff) needs to have the path stripped
+            debug('trim prefix (%s) from url %s', layerPath, req.url)
+            removed = layerPath
+            req.url = protohost + req.url.substr(protohost.length + removed.length)
+
+            // Ensure leading slash
+            if (!protohost && req.url[0] !== '/') {
+                req.url = '/' + req.url
+                slashAdded = true
+            }
+
+            // Setup base URL (no trailing slash)
+            req.baseUrl = parentUrl + (removed[removed.length - 1] === '/'
+                ? removed.substring(0, removed.length - 1)
+                : removed)
+        }
+        
+        debug('%s %s : %s', layer.name, layerPath, req.originalUrl)
+
+        if (layerError) {
+            layer.handle_error(layerError, req, res, next)
+        } else {
+            layer.handle_request(req, res, next)
+        }
+    }
 }
 
 /**
- * Express Router Constructor module
- * @module
+ * Process any parameters for the layer.
+ * @private
  */
-module.exports = Router
+proto.process_params = function process_params(layer, called, req, res, done) {
+    // var params = this.params
+
+    // captured parameters from the layer, keys and values
+    var keys = layer.keys
+
+    // fast track
+    if (!keys || keys.length === 0) {
+        return done()
+    }
+}
+
+// Get get protocol + host for a URL
+function getProtoHost(url) {
+    if (typeof url !== 'string' || url.length === 0 || url[0] === '/') {
+        return undefined
+    }
+
+    var searchIndex = url.indexOf('?')
+    var pathLength = searchIndex !== -1
+        ? searchIndex
+        : url.length
+    
+    var fqdnIndex = url.substr(0, pathLength).indexOf('://')
+
+    return fqdnIndex !== -1
+        ? url.substr(0, url.indexOf('/', 3 + fqdnIndex))
+        : undefined
+}
+
+// restore obj props after function
+function restore(fn, obj) {
+    var props = new Array(arguments.length - 2)
+    var vals = new Array(arguments.length - 2)
+
+    for(var i = 0; i < props.length; i++) {
+        props[i] = arguments[i + 2]
+        vals[i] = obj[props[i]]
+    }
+
+    return function() {
+        // restore vals
+        for(var i = 0; i < props.length; i++) {
+            obj[props[i]] = vals[i]
+        }
+        return fn.apply(this, arguments)
+    }
+}
+
+// get pathname of request
+function getPathname(req) {
+    try {
+        return parseUrl(req).pathname
+    } catch (err) {
+        return undefined
+    }
+}
+
+/**
+ * Match path to a layer.
+ *
+ * @param {Layer} layer
+ * @param {string} path
+ * @private
+ */
+function matchLayer(layer, path) {
+    try {
+        return layer.match(path)
+    } catch (err) {
+        return err
+    }
+}
