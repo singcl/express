@@ -9,11 +9,11 @@
             "request": "launch",
             "name": "启动程序",
             "program": "${workspaceFolder}/example\\app.exam.js",
-            "args": ["-m", "dev", "-not_this"],
+            "args": ["-m", "dev"],
             "runtimeArgs": [],
             "env": {
                 "NODE_ENV": "development",
-                "DEBUG": "*",  // https://github.com/visionmedia/debug
+                "DEBUG": "*,-not_this",  // https://github.com/visionmedia/debug
                 "DEBUG_COLORS": "true"
             }
         }

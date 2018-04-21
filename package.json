@@ -7,6 +7,7 @@
     "example": "example"
   },
   "scripts": {
+    "dev": "cross-env DEBUG=* DEBUG_COLORS=true node example/app.exam.js",
     "lint": "eslint .",
     "test": "mocha --require test/support/env --reporter spec  --check-leaks --no-exit test/ test/acceptance/"
   },
@@ -39,6 +40,7 @@
     "setprototypeof": "^1.1.0"
   },
   "devDependencies": {
+    "cross-env": "^5.1.4",
     "eslint": "^4.19.1",
     "eslint-plugin-mocha": "^5.0.0",
     "mocha": "^3.5.3",
