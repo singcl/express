@@ -302,8 +302,8 @@ proto.use = function use(fn) {
         debug('use %o %s', path, callback.name || '<anonymous>')
 
         var layer = new Layer(path, {
-            sensitive: this.caseSensitive,
-            strict: false,
+            // sensitive: this.caseSensitive,
+            // strict: false,
             end: false
         }, callback)
 

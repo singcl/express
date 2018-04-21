@@ -16,7 +16,7 @@ var methods             =       require('methods')
 var debug               =       require('debug')('@singcl/express:application')
 var finalhandler        =       require('finalhandler')
 var flatten             =       require('array-flatten')
-var setPrototypeOf      =       require('setprototypeof')
+// var setPrototypeOf      =       require('setprototypeof')
 // var compileETag         =       require('./utils').compileETag
 // var compileQueryParser  =       require('./utils').compileQueryParser
 // var compileTrust        =       require('./utils').compileTrust
@@ -25,6 +25,12 @@ var Router              =       require('./router')
 
 /**
  * Application prototype
+ * 
+ * Nodejs DOC:
+ * exports alias#
+ * The exports variable that is available within a module starts as a reference
+ * to module.exports. As with any variable, if you assign a new value to it, it
+ * is no longer bound to the previous value.
  */
 var app = exports = module.exports = {}
 
@@ -148,22 +154,22 @@ app.use = function use(fn) {
             return router.use(path, fn)
         }
 
-        debug('.use app under %s', path)
-        fn.mountpath = path
-        fn.parent = this
+        // debug('.use app under %s', path)
+        // fn.mountpath = path
+        // fn.parent = this
 
-        // restore .app property on req and res
-        router.use(path, function mounted_app(req, res, next) {
-            var orig = req.app
-            fn.handle(req, res, function(err) {
-                setPrototypeOf(req, orig.request)
-                setPrototypeOf(res, orig.response)
-                next(err)
-            })
-        })
+        // // restore .app property on req and res
+        // router.use(path, function mounted_app(req, res, next) {
+        //     var orig = req.app
+        //     fn.handle(req, res, function(err) {
+        //         setPrototypeOf(req, orig.request)
+        //         setPrototypeOf(res, orig.response)
+        //         next(err)
+        //     })
+        // })
 
-        // mounted an app
-        fn.emit('mount', this)
+        // // mounted an app
+        // fn.emit('mount', this)
 
     }, this)
 }
@@ -178,10 +184,10 @@ app.use = function use(fn) {
  * @public
  */
 
-app.route = function route(path) {
-    this.lazyRouter()
-    return this._router.route(path)
-}
+// app.route = function route(path) {
+//     this.lazyRouter()
+//     return this._router.route(path)
+// }
 
 /**
  * Assign `setting` to `val`, or return `setting`'s value.

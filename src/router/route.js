@@ -71,21 +71,21 @@ Route.prototype._handles_method = function _handles_method(method) {
  * @return {Array} supported HTTP methods
  * @private
  */
-Route.prototype._options = function _options() {
-    var methods = Object.keys(this.methods)
+// Route.prototype._options = function _options() {
+//     var methods = Object.keys(this.methods)
 
-    // append automatic head
-    if (this.methods.get && !this.methods.head) {
-        methods.push('head')
-    }
+//     // append automatic head
+//     if (this.methods.get && !this.methods.head) {
+//         methods.push('head')
+//     }
 
-    for (var i = 0; i < methods.length; i++) {
-        // make upper case
-        methods[i] = methods[i].toUpperCase()
-    }
+//     for (var i = 0; i < methods.length; i++) {
+//         // make upper case
+//         methods[i] = methods[i].toUpperCase()
+//     }
     
-    return methods
-}
+//     return methods
+// }
 
 
 /**
@@ -163,25 +163,25 @@ Route.prototype.dispatch = function dispatch(req, res, done) {
  * @return {Route} for chaining
  * @api public
  */
-Route.prototype.all = function all() {
-    var handles = flatten(slice.call(arguments))
+// Route.prototype.all = function all() {
+//     var handles = flatten(slice.call(arguments))
 
-    for(var i = 0 ; i < handles.length; i++) {
-        var handle = handles[i]
+//     for(var i = 0 ; i < handles.length; i++) {
+//         var handle = handles[i]
 
-        if (typeof handle !== 'function') {
-            var type = toString.call(handle)
-            var msg = 'Route.all() requires a callback function but got a ' + type
-            throw new TypeError(msg)
-        }
+//         if (typeof handle !== 'function') {
+//             var type = toString.call(handle)
+//             var msg = 'Route.all() requires a callback function but got a ' + type
+//             throw new TypeError(msg)
+//         }
 
-        var layer = Layer('/', {}, handle)
-        layer.method = undefined
+//         var layer = Layer('/', {}, handle)
+//         layer.method = undefined
 
-        this.methods._all = true
-        this.stack.push(layer)
-    }
-}
+//         this.methods._all = true
+//         this.stack.push(layer)
+//     }
+// }
 
 /**
  * @desc Array forEach 在路由原型上添加常用的HTTP METHOD

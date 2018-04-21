@@ -34,7 +34,7 @@ function express() {
 }
 
 /**
- * Expose `createApplication()`.
+ * Expose `express()`.
  * @module
  */
 exports = module.exports = express
