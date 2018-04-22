@@ -24,9 +24,9 @@ var flatten             =       require('array-flatten')
  * Module variables.
  * @private
  */
-var objectRegExp = /^\[object (\S+)\]$/
+// var objectRegExp = /^\[object (\S+)\]$/
 var slice = Array.prototype.slice
-var toString = Object.prototype.toString
+// var toString = Object.prototype.toString
 
 /**
  * Initialize a new `Router` with the given `options`.
@@ -93,8 +93,10 @@ proto.handle = function handle(req, res, out) {
 
     var idx = 0
     var protohost = getProtoHost(req.url) || ''
+
     var removed = ''
     var slashAdded = false
+    
     var paramcalled = {} 
 
     // middleware and routes
@@ -107,6 +109,8 @@ proto.handle = function handle(req, res, out) {
     // setup next layer
     req.next = next
 
+    // setup basic req values
+    req.baseUrl = parentUrl
     req.originalUrl = req.originalUrl || req.url
 
     next()
@@ -124,7 +128,9 @@ proto.handle = function handle(req, res, out) {
 
         // restore altered req.url
         if (removed.length !== 0) {
-            //
+            req.baseUrl = parentUrl
+            req.url = protohost + removed + req.url.substr(protohost.length)
+            removed = ''
         }
 
         // signal to exit router
@@ -211,6 +217,7 @@ proto.handle = function handle(req, res, out) {
                 return layer.handle_request(req, res, next)
             }
 
+            // only !route
             trim_prefix(layer, layerError, layerPath, path)
         })
     }
@@ -263,6 +270,8 @@ proto.process_params = function process_params(layer, called, req, res, done) {
     if (!keys || keys.length === 0) {
         return done()
     }
+
+    // ......
 }
 
 proto.use = function use(fn) {
@@ -295,15 +304,15 @@ proto.use = function use(fn) {
         var callback = callbacks[i]
 
         if (typeof callback !== 'function') {
-            throw new TypeError('Router.use() requires a middleware function but got a ' + gettype(callback))
+            throw new TypeError('Router.use() requires a middleware function but got a '/* +  gettype(callback) */)
         }
 
         // add the middleware
         debug('use %o %s', path, callback.name || '<anonymous>')
 
         var layer = new Layer(path, {
-            // sensitive: this.caseSensitive,
-            // strict: false,
+            sensitive: this.caseSensitive,
+            strict: false,
             end: false
         }, callback)
 
@@ -376,15 +385,15 @@ function matchLayer(layer, path) {
     }
 }
 
-// get type for error message
-function gettype(obj) {
-    var type = typeof obj
+// // get type for error message
+// function gettype(obj) {
+//     var type = typeof obj
   
-    if (type !== 'object') {
-        return type
-    }
+//     if (type !== 'object') {
+//         return type
+//     }
   
-    // inspect [[Class]] for objects
-    return toString.call(obj)
-        .replace(objectRegExp, '$1')
-}
+//     // inspect [[Class]] for objects
+//     return toString.call(obj)
+//         .replace(objectRegExp, '$1')
+// }
