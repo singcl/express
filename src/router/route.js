@@ -1,9 +1,8 @@
 /*!
- * express
- * Copyright(c) 2009-2013 TJ Holowaychuk
- * Copyright(c) 2013 Roman Shtylman
- * Copyright(c) 2014-2015 Douglas Christopher Wilson
- * MIT Licensed
+ * @singcl/express
+ * Copyright(c) 2018-2018 singcl
+ * github: https://github.com/singcl/express
+ * BSD-3 Licensed
  */
 
 'use strict'
