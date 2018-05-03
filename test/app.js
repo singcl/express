@@ -26,3 +26,18 @@ describe('app', function() {
             .expect(404, done)
     })
 })
+
+// 当前版本app.router 已经不使用。getter上throw了一个Error
+// 这里测试是否正确设置的错误提示getter 信息。
+describe('app.router', function() {
+    // done 异步测试
+    it('should throw with Error notice info', function(done) {
+        var app = express()
+
+        try {
+            app.router
+        } catch (err) {
+            done()
+        }
+    })
+})
