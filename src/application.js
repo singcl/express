@@ -60,6 +60,7 @@ app.init = function init() {
  * @private
  */
 app.defaultConfiguration = function defaultConfiguration() {
+    // app.router is deprecated and removed.
     Object.defineProperty(this, 'router', {
         get: function() {
             throw new Error('\'app.router\' is deprecated!\nPlease see the 3.x to 4.x migration guide for details on how to update your app.')
